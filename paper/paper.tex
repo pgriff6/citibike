@@ -20,7 +20,7 @@
 %------------------------------------------------------------------------- 
 \begin{document}
 
-\title{Citibike Usage Balancing through Congestion Pricing}
+\title{Citi Bike Usage Balancing through Congestion Pricing}
 
 \author{Paul Griffioen\\Dept. of Electrical and Computer Engineering\\Carnegie Mellon University\\ pgriffi1@andrew.cmu.edu\\
 % For a paper whose authors are all at the same institution, 
@@ -37,46 +37,51 @@ Anthony Jin\\Dept. of Electrical and Computer Engineering\\Carnegie Mellon Unive
 %------------------------------------------------------------------------- 
 \Section{Overview}
 
-The Citibike system, located in New York City, is one of many bicycle sharing systems that exist in the world. This system makes use of bicycles locked at various locations throughout the city, and users make one-way trips between stations to get to their destinations. Since users unlock a bike at one station and drop it off at another station, bikes tend to follow unidirectional flows at various times of the day. As a result, some stations oftentimes have few to no bikes at them while other stations have more bikes than the dock can hold.
+The Citi Bike system, located in New York City, is one of many bicycle sharing systems that exist in the world. Since users unlock a bike at one station and drop it off at another station, bikes tend to follow unidirectional flows at various times of the day. As a result, some stations have few to no bikes at them while others are completely full.
 
-This unidirectional flow of bikes frustrates users who would like to pick up a bike from an empty station or drop off a bike at a full station. As a result, this project seeks to address the bicycle congestion problem by introducing a congestion-based pricing scheme that modifies the incentives of users. This congestion-based pricing scheme is significant in that seeks to make current bicycle sharing systems more efficient. It also takes a unique approach by solving the congestion problem from a network standpoint as opposed to other viewpoints, such as that presented in \cite{incentives}.
+This unidirectional flow of bikes frustrates users who would like to pick up a bike from an empty station or drop off a bike at a full station. As a result, this project seeks to address the bicycle congestion problem by introducing a congestion-based pricing scheme that modifies the incentives of users. It takes a unique approach by solving the congestion problem from a network standpoint as opposed to other viewpoints, such as that presented in \cite{incentives}.
 
 %------------------------------------------------------------------------- 
 \Section{Objectives and Deliverables}
 
-This project seeks to address the issue of system congestion through a pricing scheme based on the optimization of the structure and dynamics of the system network. In addition, alteration of the network topology to reduce congestion will be explored through optimal placement of nodes. Large amounts of publicly available data from Citibike's website will be used as the main dataset for this project. The deliverables for this project include presenting progress, formulating a paper, and participating in a conference-style presentation. In the end, this project seeks to analyze the Citibike network and minimize congestion by modifying its structure through changing people's incentives.
+This project seeks to address the issue of system congestion through a pricing scheme based on the optimization of network structure and dynamics. In addition, alteration of the network topology to reduce congestion will be explored through optimal placement of nodes (stations). Large amounts of publicly available data from Citi Bike's website will be used as the main dataset for this project \cite{dataset}. The deliverables for this project include presenting progress, formulating a paper, and participating in a conference-style presentation. In the end, this project seeks to analyze the Citi Bike network and minimize congestion by modifying its structure through changing people's incentives.
 
 %------------------------------------------------------------------------- 
 \Section{Tasks and Timeline}
 
-Anthony writes stuff here. This is how to cite. \cite{redistribution} % These are comments. They come after a percent symbol. I might currently have too much stuff written, and I'm sure there's room to cut down, so we can talk about that when we meet tonight.
+To accomplish the objectives aforementioned, a timeline with associated tasks is proposed as follows.
+\textit{Network Formulation}: Two to three weeks should be used to build weighted networks of trips for each month using the data found in \cite{dataset}.
+\textit{Network Analysis}: About three weeks should be used to compare the weighted networks in the context of different factors such as weather and seasonality, the time of day, and the day of the week. Additionally, potential user incentives should be identified.
+\textit{Optimization Using Congestion-Based Pricing Scheme}: The congestion-based pricing scheme will take four to five weeks to develop and will deploy the identified user incentives. Specifically, the scheme will feature a user incentive model based on the mathematical models proposed in \cite{incentives} and \cite{redistribution}. In addition, a convex optimization problem will be formulated to account for related objective functions (i.e. minimizing congestion) and constraints (i.e., cost of operation) \cite{sharing} \cite{management}. Ultimately, this scheme aims to optimize the existing network by changing its weights and decreasing congestion.
+\textit{Optimization of Network Topology}: If time permits, an additional task is to examine the topology of the existing network and make appropriate changes to its physical structure by optimizing the placement of nodes.
 
 %------------------------------------------------------------------------- 
 \Section{Conclusion}
 
-Anthony writes stuff here.
+This project aims to optimize the Citi Bike network via a congestion-based pricing scheme. Specifically, this scheme will change user incentives and will consequently modify the network's weights while minimizing congestion.
 
 %------------------------------------------------------------------------- 
 \nocite{ex1,ex2}
 \bibliographystyle{paper}
 \bibliography{paper}
 
-\begin{thebibliography}{}
+%\begin{thebibliography}{}
+\begin{thebibliography}{}\setlength{\itemsep}{-1ex}\small
+
+\bibitem{incentives}
+A. Singla, M. Santoni, G. Bartok, P. Mukerji, M. Meenen, and A. Krause. "Incentivizing Users for Balancing Bike Sharing Systems." \textit{AAAI}, pp. 723-729, 2015.
+
+\bibitem{dataset}
+Citi Bike, "System Data." Motivate International, Inc. Accessed 22 September 2016. [Online]. Available: https://www.citibikenyc.com/system-data.
 
 \bibitem{redistribution}
-J. Pfrommer, J. Warrington, G. Schildbach, and M. Morari. "Dynamic Vehicle Redistribution and Online Price Incentives in Shared Mobility Systems." \textit{Intelligent Transportation Systems, IEEE Transactions on}, 15(4):1567-1578, 2014.
+J. Pfrommer, J. Warrington, G. Schildbach, and M. Morari. "Dynamic Vehicle Redistribution and Online Price Incentives in Shared Mobility Systems." \textit{Intelligent Transportation Systems, IEEE Transactions on}, 15(4): 1567-1578, 2014.
 
 \bibitem{sharing}
 M. Rainer-Harbach, P. Papazek, B. Hu, and G. R. Raidl. "Balancing Bicycle Sharing Systems: A Variable Neighborhood Search Approach." \textit{Springer}, 2013.
 
 \bibitem{management}
-T. Raviv and O. Kolka. "Optimal Inventory Management of a Bike-Sharing Station." \textit{IIE Transactions}, 45(10):1077-1093, 2013.
-
-\bibitem{incentives}
-A. Singla, M. Santoni, G. Bartok, P. Mukerji, M. Meenen, and A. Krause. "Incentivizing Users for Balancing Bike Sharing Systems." \textit{In AAAI}, pages 723-729, 2015.
-
-\bibitem{dataset}
-Citi Bike, "System Data," Motivate International, Inc, [Online]. Available: https://www.citibikenyc.com/system-data. [Accessed 22 September 2016].
+T. Raviv and O. Kolka. "Optimal Inventory Management of a Bike-Sharing Station." \textit{IIE Transactions}, 45(10): 1077-1093, 2013.
 
 \end{thebibliography}
 
