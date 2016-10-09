@@ -1,0 +1,118 @@
+
+%
+%  $Description: Author guidelines and sample document in LaTeX 2.09$ 
+%
+%  $Author: ienne $
+%  $Date: 1995/09/15 15:20:59 $
+%  $Revision: 1.4 $
+%
+
+\documentclass[times, 10pt,twocolumn]{article} 
+\usepackage{paper}
+\usepackage{times}
+
+%\documentstyle[times,art10,twocolumn,latex8]{article}
+
+%------------------------------------------------------------------------- 
+% take the % away on next line to produce the final camera-ready version 
+\pagestyle{empty}
+
+%------------------------------------------------------------------------- 
+\begin{document}
+
+\title{Citi Bike Usage Balancing through Congestion Pricing}
+
+\author{Paul Griffioen\\Dept. of Electrical and Computer Engineering\\Carnegie Mellon University\\ pgriffi1@andrew.cmu.edu\\
+% For a paper whose authors are all at the same institution, 
+% omit the following lines up until the closing ``}''.
+% Additional authors and addresses can be added with ``\and'', 
+% just like the second author.
+\and
+Anthony Jin\\Dept. of Electrical and Computer Engineering\\Carnegie Mellon University\\xiaoxiaj@andrew.cmu.edu\\
+}
+
+\maketitle
+\thispagestyle{empty}
+
+%------------------------------------------------------------------------- 
+\Section{Abstract}
+
+The issue of congestion in bicycle sharing systems is prevalent in many cities. This project proposes an incentive-based pricing scheme for the Citi Bike system that minimizes bicycle congestion. It approaches bicycle sharing systems from a network perspective, analyzing and optimizing the network by providing monetary incentives to users.
+
+%------------------------------------------------------------------------- 
+\Section{Introduction and Motivation}
+
+The Citi Bike system, located in New York City, is one of many bicycle sharing systems that exist in the world. Since users unlock a bike at one station and drop it off at another station, bikes tend to follow unidirectional flows at various times of the day. As a result, some stations have few to no bikes at them while others are completely full.
+
+This unidirectional flow of bikes frustrates users who would like to pick up a bike from an empty station or drop off a bike at a full station. As a result, this project seeks to address the issue of system congestion through a pricing scheme based on the optimization of network structure and dynamics. In addition, alteration of the network topology to reduce congestion will be explored through optimal placement of nodes (stations). In the end, this project seeks to analyze the Citi Bike network and minimize congestion by modifying its structure through changing people's incentives.
+
+%------------------------------------------------------------------------- 
+\Section{Previous Work}
+
+It takes a unique approach by solving the congestion problem from a network standpoint as opposed to other viewpoints, such as that presented in \cite{incentives}.
+
+%------------------------------------------------------------------------- 
+\Section{Approach}
+
+The network for the Citi Bike system is built using large amounts of publicly available data from Citi Bike's website \cite{dataset}. This system network is built such that the nodes represent the stations and the weighted links represent the number of trips made from one station to another in a certain period of time. In addition, each node contains information such as the station identification number, the station's latitude and longitude, the maximum number of bikes the station can hold, and the current number of bikes at the station. The information associated with each node will be used as the inputs in the function representing the incentive-based pricing scheme.
+
+It is assumed that the trip data provided by Citi Bike is reliable and complete. However, this data does not include explicit information about the addition or removal of bikes to the system, and it does not include information about the transfer of bikes by by truck from one station to another. As a result, this project can only analyze bike trips from one station to another. In addition, the data provided online does not include information about the number of bikes at particular stations at particular points in time. However, all of this information can be determined from the trip data as long as an initial number of bikes at each station is given for a particular time. This information is acquired through an initialization process which assumes that the system starts out with no bikes. Over a specified time period, bikes are added to the system using incoming trip data for each station. Bikes are then tracked by identification number to determine which station they are at. After the specified period of time, it is assumed that all bikes have been added to the system. This results in an initial system state by which trip data can be used to determine the number of bikes at any particular station at any future time.
+
+%------------------------------------------------------------------------- 
+\Section{Experimental Setup and Results}
+
+%------------------------------------------------------------------------- 
+\Section{Conclusion}
+
+%------------------------------------------------------------------------- 
+%\Section{Overview}
+%
+%The Citi Bike system, located in New York City, is one of many bicycle sharing systems that exist in the world. Since users unlock a bike at one station and drop it off at another station, bikes tend to follow unidirectional flows at various times of the day. As a result, some stations have few to no bikes at them while others are completely full.
+%
+%This unidirectional flow of bikes frustrates users who would like to pick up a bike from an empty station or drop off a bike at a full station. As a result, this project seeks to address the bicycle congestion problem by introducing a congestion-based pricing scheme that modifies the incentives of users. It takes a unique approach by solving the congestion problem from a network standpoint as opposed to other viewpoints, such as that presented in \cite{incentives}.
+%
+%%------------------------------------------------------------------------- 
+%\Section{Objectives and Deliverables}
+%
+%This project seeks to address the issue of system congestion through a pricing scheme based on the optimization of network structure and dynamics. In addition, alteration of the network topology to reduce congestion will be explored through optimal placement of nodes (stations). Large amounts of publicly available data from Citi Bike's website will be used as the main dataset for this project \cite{dataset}. The deliverables for this project include presenting progress, formulating a paper, and participating in a conference-style presentation. In the end, this project seeks to analyze the Citi Bike network and minimize congestion by modifying its structure through changing people's incentives.
+%
+%%------------------------------------------------------------------------- 
+%\Section{Tasks and Timeline}
+%
+%To accomplish the objectives aforementioned, a timeline with associated tasks is proposed as follows.
+%\textit{Network Formulation}: Two to three weeks should be used to build weighted networks of trips for each month using the data found in \cite{dataset}.
+%\textit{Network Analysis}: About three weeks should be used to compare the weighted networks in the context of different factors such as weather and seasonality, the time of day, and the day of the week. Additionally, potential user incentives should be identified.
+%\textit{Optimization Using Congestion-Based Pricing Scheme}: The congestion-based pricing scheme will take four to five weeks to develop and will deploy the identified user incentives. Specifically, the scheme will feature a user incentive model based on the mathematical models proposed in \cite{incentives} and \cite{redistribution}. In addition, a convex optimization problem will be formulated to account for related objective functions (i.e. minimizing congestion) and constraints (i.e., cost of operation) \cite{sharing} \cite{management}. Ultimately, this scheme aims to optimize the existing network by changing its weights and decreasing congestion.
+%\textit{Optimization of Network Topology}: If time permits, an additional task is to examine the topology of the existing network and make appropriate changes to its physical structure by optimizing the placement of nodes.
+%
+%%------------------------------------------------------------------------- 
+%\Section{Conclusion}
+%
+%This project aims to optimize the Citi Bike network via a congestion-based pricing scheme. Specifically, this scheme will change user incentives and will consequently modify the network's weights while minimizing congestion.
+
+%------------------------------------------------------------------------- 
+\nocite{ex1,ex2}
+\bibliographystyle{paper}
+\bibliography{paper}
+
+%\begin{thebibliography}{}
+\begin{thebibliography}{}\setlength{\itemsep}{-1ex}\small
+
+\bibitem{incentives}
+A. Singla, M. Santoni, G. Bartok, P. Mukerji, M. Meenen, and A. Krause. "Incentivizing Users for Balancing Bike Sharing Systems." \textit{AAAI}, pp. 723-729, 2015.
+
+\bibitem{dataset}
+Citi Bike, "System Data." Motivate International, Inc. Accessed 22 September 2016. [Online]. Available: https://www.citibikenyc.com/system-data.
+
+\bibitem{redistribution}
+J. Pfrommer, J. Warrington, G. Schildbach, and M. Morari. "Dynamic Vehicle Redistribution and Online Price Incentives in Shared Mobility Systems." \textit{Intelligent Transportation Systems, IEEE Transactions on}, 15(4): 1567-1578, 2014.
+
+\bibitem{sharing}
+M. Rainer-Harbach, P. Papazek, B. Hu, and G. R. Raidl. "Balancing Bicycle Sharing Systems: A Variable Neighborhood Search Approach." \textit{Springer}, 2013.
+
+\bibitem{management}
+T. Raviv and O. Kolka. "Optimal Inventory Management of a Bike-Sharing Station." \textit{IIE Transactions}, 45(10): 1077-1093, 2013.
+
+\end{thebibliography}
+
+\end{document}
