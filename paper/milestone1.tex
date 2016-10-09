@@ -10,6 +10,7 @@
 \documentclass[times, 10pt,twocolumn]{article} 
 \usepackage{paper}
 \usepackage{times}
+\usepackage{graphicx}
 
 %\documentstyle[times,art10,twocolumn,latex8]{article}
 
@@ -49,24 +50,54 @@ This unidirectional flow of bikes frustrates users who would like to pick up a b
 %------------------------------------------------------------------------- 
 \Section{Previous Work}
 
-It takes a unique approach by solving the congestion problem from a network standpoint as opposed to other viewpoints, such as that presented in \cite{incentives}.
+Previous work has taken many viewpoints to solve the bike sharing congestion problem. \cite{incentives} proposes a dynamic incentives system that involves future traffic prediction, truck-based re-positioning policies, and a schema to compute monetary incentives for the users. \cite{redistribution} uses a similar approach, combining staff-based dynamic vehicle distribution and real-time price incentives for customers. In contrast, \cite{management} and \cite{redistribution} look at the inventory management of individual bike-sharing stations and formulate appropriate convex optimization problems. Similar to the aforementioned approaches, this project will address the congestion problem as a convex optimization problem and introduce a congestion-based pricing scheme to modify user incentives. Unlike prior work, however, it takes a network standpoint and models the Citi Bike system as a dynamic network. 
+
 
 %------------------------------------------------------------------------- 
 \Section{Approach}
 
-The network for the Citi Bike system is built using large amounts of publicly available data from Citi Bike's website \cite{dataset}. This system network is built so that the nodes represent the stations and the weighted links represent the number of trips made from one station to another in a certain period of time. In addition, each node contains information such as the station identification number, the station's latitude and longitude, the maximum number of bikes the station can store, and the current number of bikes at the station. The information associated with each node will be used as the inputs in the function representing the incentive-based pricing scheme.
+The Citi Bike network is built using available data from Citi Bike's website \cite{dataset}. the nodes represent different bike stations and the weighted links represent the number of trips made from one station to another in a certain period of time. In addition, each node contains information such as the station's identification number, latitude and longitude, maximum capacity, and the current number of bikes at the station. These node attributes will be used as the inputs in the function representing the incentive-based pricing scheme.
 
-It is assumed that the trip data provided by Citi Bike is reliable and complete. However, this data does not include explicit information about the addition or removal of bikes to the system, and it does not include information about the transfer of bikes by by truck from one station to another. As a result, this project can only analyze bike trips from one station to another. In addition, the data on \cite{dataset} does not include information about the number of bikes at particular stations at particular points in time. However, all of this information can be determined from the trip data as long as an initial number of bikes at each station is given for a particular time. This information is acquired through an initialization process which assumes that the system starts out with no bikes. Over a specified time period, bikes are added to the system using incoming trip data for each station. Bikes are then tracked by identification number to determine which station they are at. After the specified period of time, it is assumed that all bikes have been added to the system. This results in an initial system state by which trip data can be used to determine the number of bikes at any particular station at any future time.
+It is assumed that the trip data on \cite{dataset} is reliable and complete. However, this data does not include explicit information about the addition or removal of bikes to the system nor the transfer of bikes by truck from one station to another. As a result, this project can only analyze bike trips from one station to another. Additionally, there is no information about the number of bikes at particular stations at specific points in time. Alternatively, an initialization procedure is used to infer this information: identify a start time and assume that the system has no bikes. Over a specified time period, bikes are added to the system using incoming trip data for each station. Bikes are then tracked by identification number to determine which station they are at. At the end of this period, it is assumed that all bikes have been added to the system and each station is assigned with an initial number of bikes. Future trip data can now be used to determine the number of bikes at any particular station at any time after the initialization procedure.
 
 %------------------------------------------------------------------------- 
 \Section{Experimental Setup and Results}
-As a preliminary analysis,a sample dynamic network is constructed to represent bike usage from Thursday to Saturday on a normal week. First, Citi Bike data from the first three days of September in 2016 is extracted from the original data set to generate a node table (including the name, latitude, and longitude of each station in the Citi Bike system) and an edge list (including the start time and end time of a trip). Second, the compiled node table and edge list are imported to Gephi as a dynamic network. The Gephi plugin \textit{Geo Layout} is used to arrange the nodes according to their geological locations, while network properties can be dynamically changed by filtering out edges outside of a particular time window. In this analysis, the time window is set to be one hour.
+Using the approach described in the previous section, a sample dynamic network is constructed to represent bike usage from Thursday to Saturday on a normal week. First, Citi Bike data from the first three days of September in 2016 is extracted from the original data set from \cite{dataset} to generate a node table with 583 nodes and an edge list with more than 130,000 edges. Second, the node table and edge list are imported to Gephi as a dynamic network. The Gephi plugin \textit{Geo Layout} is used to arrange the nodes according to their geological locations, while network properties can be dynamically changed by filtering out edges outside of a particular time window. In this analysis, the time window for edge filtering is set to be one hour.
 
-Figure 1 shows the network at four different times on September 1, 2016; Figure 2 to 4 illustrate how some of the network properties changes over time. The network's average node degree and path length
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{combined}
+	\caption{Citi Bike network at four time intervals on September 1, 2016}
+\end{figure}
+
+Figure 1 shows the network at four different time intervals on September 1, 2016. From left to right, the figures represent the network between 1AM and 2AM, 7AM and 8AM, 1PM and 2PM, and 7PM and 8PM. Figure 2 to 4 illustrate how some of the network properties changes over time. Everyday, the maximum average node degree is observed between 4PM and 7PM, corresponding to the rush hour in the afternoon. On the two weekdays, there is also a secondary peak between 7AM and 8AM, reflecting the rush hour in the morning. As expected, this secondary peak is not present on September 3 since it is a Saturday. On the contrary, the network's average path length stays relatively consistent during the day and in the early evening. Bikers seem to take longer trips around midnight and in the morning (between 6AM and 7AM), while the trips between these times tend to be much shorter. As for community structure, the network's modularity and formation of communities exhibit a periodic pattern: during the day, the network has high modularity and the nodes can be grouped into a few communities. At night, the network is less modular and only a handful of nodes can form communities with others.
+
 %% Insert figs
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{node_degree}
+	\caption{Average node degree}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{path_length}
+	\caption{Average path length}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.5\textwidth]{communities}
+	\caption{Modularity and number of communities}
+\end{figure}
+
+This experimental setup has some limitations: for example, the congestion level at each station (i.e. maximum capacity versus current number of stored bikes) is not taken into account because the initialization procedure has not been implemented. In addition, the distance between each pair of nodes is assumed to be the same while a more realistic analysis should also take into account the physical distance. Lastly, this analysis has only exploited a very small subset of the available data.
 
 %------------------------------------------------------------------------- 
 \Section{Conclusion}
+The basic methodology to construct the Citi Bike network is proposed in this work. Because certain information is not available about the bike stations' capacity, an initialization procedure is also proposed to estimate the number of bikes in the system and at each station. As a preliminary analysis, a sample network is constructed using data between September 1, 2016 and September 3, 2016 to evaluate network properties at different time intervals. In this work, Paul Griffioen extracted network information from the original dataset using MATLAB and Anthony Jin analyzed the network using Gephi.
+
+The next step of this project is to overcome the limitations of the experimental setup and construct the complete citi Bike network. By Milestone 2, we will finish network analysis and start implementing the pricing scheme. 
 
 %------------------------------------------------------------------------- 
 %\Section{Overview}
@@ -105,9 +136,6 @@ Figure 1 shows the network at four different times on September 1, 2016; Figure 
 \bibitem{incentives}
 A. Singla, M. Santoni, G. Bartok, P. Mukerji, M. Meenen, and A. Krause. "Incentivizing Users for Balancing Bike Sharing Systems." \textit{AAAI}, pp. 723-729, 2015.
 
-\bibitem{dataset}
-Citi Bike, "System Data." Motivate International, Inc. Accessed 22 September 2016. [Online]. Available: https://www.citibikenyc.com/system-data.
-
 \bibitem{redistribution}
 J. Pfrommer, J. Warrington, G. Schildbach, and M. Morari. "Dynamic Vehicle Redistribution and Online Price Incentives in Shared Mobility Systems." \textit{Intelligent Transportation Systems, IEEE Transactions on}, 15(4): 1567-1578, 2014.
 
@@ -116,6 +144,9 @@ M. Rainer-Harbach, P. Papazek, B. Hu, and G. R. Raidl. "Balancing Bicycle Sharin
 
 \bibitem{management}
 T. Raviv and O. Kolka. "Optimal Inventory Management of a Bike-Sharing Station." \textit{IIE Transactions}, 45(10): 1077-1093, 2013.
+
+\bibitem{dataset}
+Citi Bike, "System Data." Motivate International, Inc. Accessed 22 September 2016. [Online]. Available: https://www.citibikenyc.com/system-data.
 
 \end{thebibliography}
 
