@@ -11,6 +11,7 @@
 \usepackage{paper}
 \usepackage{times}
 \usepackage{graphicx}
+\usepackage{float}
 
 %\documentstyle[times,art10,twocolumn,latex8]{article}
 
@@ -50,7 +51,7 @@ This unidirectional flow of bikes frustrates users who would like to pick up a b
 %------------------------------------------------------------------------- 
 \Section{Previous Work}
 
-Previous work has taken many viewpoints to solve the bike sharing congestion problem. \cite{incentives} proposes a dynamic incentives system that involves future traffic prediction, truck-based re-positioning policies, and a schema to compute monetary incentives for the users. \cite{redistribution} uses a similar approach, combining staff-based dynamic vehicle distribution and real-time price incentives for customers. In contrast, \cite{management} and \cite{redistribution} look at the inventory management of individual bike-sharing stations and formulate appropriate convex optimization problems. Similar to the aforementioned approaches, this project will address the congestion problem as a convex optimization problem and introduce a congestion-based pricing scheme to modify user incentives. Unlike prior work, however, it takes a network standpoint and models the Citi Bike system as a dynamic network. 
+Previous work has taken many viewpoints to solve the bike sharing congestion problem. The work in \cite{incentives} proposes a dynamic incentives system that involves future traffic prediction, truck-based re-positioning policies, and schema to compute monetary incentives for users. The authors in \cite{redistribution} use a similar approach, combining staff-based dynamic vehicle distribution and real-time price incentives for customers. In contrast, \cite{management} and \cite{redistribution} look at the inventory management of individual bike-sharing stations and formulate appropriate convex optimization problems. Similar to the aforementioned approaches, this project will address the congestion problem as a convex optimization problem and introduce a congestion-based pricing scheme to modify user incentives. Unlike prior work, however, it takes a network standpoint and models the Citi Bike system as a dynamic network.
 
 
 %------------------------------------------------------------------------- 
@@ -62,42 +63,54 @@ It is assumed that the trip data on \cite{dataset} is reliable and complete. How
 
 %------------------------------------------------------------------------- 
 \Section{Experimental Setup and Results}
-Using the approach described in the previous section, a sample dynamic network is constructed to represent bike usage from Thursday to Saturday on a normal week. First, Citi Bike data from the first three days of September in 2016 is extracted from the original data set from \cite{dataset} to generate a node table with 583 nodes and an edge list with more than 130,000 edges. Second, the node table and edge list are imported to Gephi as a dynamic network. The Gephi plugin \textit{Geo Layout} is used to arrange the nodes according to their geological locations, while network properties can be dynamically changed by filtering out edges outside of a particular time window. In this analysis, the time window for edge filtering is set to be one hour.
+Using the approach described in the previous section, a sample dynamic network is constructed to represent bike usage from Thursday to Saturday on a normal week. First, Citi Bike data from the first three days of September 2016 is extracted from the original data set from \cite{dataset} to generate a node table with 583 nodes and an edge list with more than 130,000 edges. Second, the node table and edge list are imported to Gephi as a dynamic network. The Gephi plugin \textit{Geo Layout} is used to arrange the nodes according to their geographic locations, while network properties can be dynamically changed by filtering out edges outside of a particular time window. In this analysis, the time window for edge filtering is set to one hour.\\
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.5\textwidth]{combined}
-	\caption{Citi Bike network at four time intervals on September 1, 2016}
-\end{figure}
+%\begin{figure}[H]
+%	\centering
+%	\includegraphics[width=0.5\textwidth]{combined.jpg}
+%	\caption{Citi Bike network at four time intervals on September 1, 2016}
+%\end{figure}
+\centerline{\includegraphics[width=0.5\textwidth]{combined.jpg}}
+\centerline{Figure 1: Citi Bike Network on September 1, 2016}
 
-Figure 1 shows the network at four different time intervals on September 1, 2016. From left to right, the figures represent the network between 1AM and 2AM, 7AM and 8AM, 1PM and 2PM, and 7PM and 8PM. Figure 2 to 4 illustrate how some of the network properties changes over time. Everyday, the maximum average node degree is observed between 4PM and 7PM, corresponding to the rush hour in the afternoon. On the two weekdays, there is also a secondary peak between 7AM and 8AM, reflecting the rush hour in the morning. As expected, this secondary peak is not present on September 3 since it is a Saturday. On the contrary, the network's average path length stays relatively consistent during the day and in the early evening. Bikers seem to take longer trips around midnight and in the morning (between 6AM and 7AM), while the trips between these times tend to be much shorter. As for community structure, the network's modularity and formation of communities exhibit a periodic pattern: during the day, the network has high modularity and the nodes can be grouped into a few communities. At night, the network is less modular and only a handful of nodes can form communities with others.
+Figure 1 shows the network at four different time intervals on September 1, 2016. From left to right, the figures represent the network between 1AM and 2AM, 7AM and 8AM, 1PM and 2PM, and 7PM and 8PM. Figures 2 to 4 illustrate how some of the network properties change over time. Everyday, the maximum average node degree is observed between 4PM and 7PM, corresponding to evening rush hour. On the two weekdays, there is also a secondary peak between 7AM and 8AM, reflecting the morning rush hour. As expected, this secondary peak is not present on September 3 since it is a Saturday. On the contrary, the network's average path length stays relatively consistent during the day and in the early evening. Bikers seem to take longer trips around midnight and in the morning (between 6AM and 7AM), while the trips between midnight and 6AM tend to be much shorter. As for community structure, the network's modularity and formation of communities exhibit a periodic pattern: during the day, the network has high modularity and the nodes can be grouped into a few communities. At night, the network is less modular and only a handful of nodes can form communities with others.
+
+This experimental setup has some limitations: for example, the congestion level at each station (i.e. maximum capacity versus current number of stored bikes) is not taken into account because the initialization procedure has not been implemented. In addition, the distance between each pair of nodes is assumed to be the same while a more realistic analysis should also take into account the physical distance between stations. Lastly, this analysis has only exploited a very small subset of the available data.
 
 %% Insert figs
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.5\textwidth]{node_degree}
-	\caption{Average node degree}
-\end{figure}
+%\begin{figure}[H]
+%	\centering
+%	\includegraphics[width=0.5\textwidth]{node_degree.jpg}
+%	\caption{Average node degree}
+%\end{figure}
+\centerline{\includegraphics[width=0.4\textwidth]{node_degree.jpg}}
+\centerline{Figure 2: Average Node Degree}
+\vspace{5mm}
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.5\textwidth]{path_length}
-	\caption{Average path length}
-\end{figure}
+%\begin{figure}[H]
+%	\centering
+%	\includegraphics[width=0.5\textwidth]{path_length.jpg}
+%	\caption{Average path length}
+%\end{figure}
+\centerline{\includegraphics[width=0.4\textwidth]{path_length.jpg}}
+\centerline{Figure 3: Average Path Length}
+\vspace{5mm}
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.5\textwidth]{communities}
-	\caption{Modularity and number of communities}
-\end{figure}
-
-This experimental setup has some limitations: for example, the congestion level at each station (i.e. maximum capacity versus current number of stored bikes) is not taken into account because the initialization procedure has not been implemented. In addition, the distance between each pair of nodes is assumed to be the same while a more realistic analysis should also take into account the physical distance. Lastly, this analysis has only exploited a very small subset of the available data.
+%\begin{figure}[H]
+%	\centering
+%	\includegraphics[width=0.5\textwidth]{communities.jpg}
+%	\caption{Modularity and number of communities}
+%\end{figure}
+\centerline{\includegraphics[width=0.4\textwidth]{communities.jpg}}
+\centerline{Figure 4: Modularity and Number of Communities}
 
 %------------------------------------------------------------------------- 
 \Section{Conclusion}
 The basic methodology to construct the Citi Bike network is proposed in this work. Because certain information is not available about the bike stations' capacity, an initialization procedure is also proposed to estimate the number of bikes in the system and at each station. As a preliminary analysis, a sample network is constructed using data between September 1, 2016 and September 3, 2016 to evaluate network properties at different time intervals. In this work, Paul Griffioen extracted network information from the original dataset using MATLAB and Anthony Jin analyzed the network using Gephi.
 
-The next step of this project is to overcome the limitations of the experimental setup and construct the complete citi Bike network. By Milestone 2, we will finish network analysis and start implementing the pricing scheme. 
+The next step of this project is to overcome the limitations of the experimental setup and construct the complete Citi Bike network. By Milestone 2, we will finish the network analysis and start implementing the pricing scheme. 
+
+\newpage
 
 %------------------------------------------------------------------------- 
 %\Section{Overview}
