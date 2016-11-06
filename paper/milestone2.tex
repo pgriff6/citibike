@@ -55,6 +55,63 @@ Previous work has taken many viewpoints to solve the bike sharing congestion pro
 
 %------------------------------------------------------------------------- 
 \Section{Approach}
+To provide accurate monetary incentives to users, a convex optimization problem is formulated that seeks to minimize bicycle congestion and user dissatisfaction. The following terms are used in the formation of the convex optimization problem. $u = \{u_1, u_2, ..., u_n\}$ represents the set of $n$ users in the Citi Bike network, $A_u$ represents the age of user $u$, and $r_u$ represents the maximum distance user $u$ is willing to walk. $s = \{s_1, s_2, ..., s_m\}$ is the set of $m$ bike stations in the Citi Bike network, and $s_{pu}$ and $s_{du}$ represent user $u$'s intended pick-up and drop-off stations, respectively. As a result, $d_{pu} = \{d_{pu1}, d_{pu2}, ..., d_{pum}\}$ and $d_{du} = \{d_{du1}, d_{du2}, ..., d_{dum}\}$ denote the set of distances between the set of all stations $s$ and station $s_{pu}$ or $s_{du}$, respectively. $G_s$ represents the congestion level at station $s$, where $C_s$ denotes the maximum capacity at station $s$, $v_s$ denotes the current number of bikes at station $s$, and $o_s$ and $i_s$ denote the out-degree and in-degree of station $s$, respectively. $k$ is a constant that weights the impact of the out-degree and in-degree on the congestion level. Next, $s_{pu*} = \{s_{pu1}, s_{pu2}, ...\}$ and $s_{du*} = \{s_{du1}, s_{du2}, ...\}$ represent user $u$'s set of candidate stations for pick-up and drop-off, respectively. $d_{pu*} = \{d_{pu*1}, d_{pu*2}, ...\}$ and $d_{du*} = \{d_{du*1}, d_{du*2}, ...\}$ denote the set of distances between the set of stations $s_{pu*}$ and station $s_{pu}$ or between the set of stations $s_{du*}$ and station $s_{du}$, respectively. In addition, $p_u = \{p_{u1}, p_{u2}, ..., p_{max}\}$ represents the ordered set of payments offered to user $u$ where $p_{max}$ is the same for all users. $B$ represents the current budget for the entire Citi Bike network, and $S_u$ is a variable that equals $1$ if user $u$ is a subscriber and equals $0$ otherwise. $D_u$ denotes the dissatisfaction of user $u$, and $c_3$ is a constant that weights how important a user's age is in their dissatisfaction for walking from one station to another. $c_1 = \{c_{11}, c_{12}, ...\}$ and $c_2 = \{c_{21}, c_{22}, ...\}$ denote two sets of constants associated with the sets $d_{pu*}$ and $d_{du*}$, respectively, that weight the likelihood of user $u$ choosing to walk to a different station. Also, $a_j$ is a constant that weights the likelihood of user $u$ choosing payment option $p_{uj}$. Lastly, $w_1$ and $w_2$ represent constants that weight the importance of minimizing congestion and user dissatisfaction, respectively.
+\\
+\\
+\textbf{Sub-Functions}
+\begin{equation}
+r_u = f(A_u)
+\end{equation}
+\begin{equation}
+d_{pu} = f(s_{pu}, s)
+\end{equation}
+\begin{equation}
+d_{du} = f(s_{du}, s)
+\end{equation}
+\begin{equation}
+G_s = C_s - v_s + k(o_s - i_s)
+\end{equation}
+\begin{equation}
+s_{pu*} = f(G_s, d_{pu}, r_u)
+\end{equation}
+\begin{equation}
+s_{du*} = f(G_s, d_{du}, r_u)
+\end{equation}
+\begin{equation}
+d_{pu*} = f(s_{pu}, s_{pu*})
+\end{equation}
+\begin{equation}
+d_{du*} = f(s_{du}, s_{du*})
+\end{equation}
+\begin{equation}
+p_u = f(B, n, d_{pu*}, d_{du*}, A_u, S_u)
+\end{equation}
+\begin{equation}
+p_{max} = B/n
+\end{equation}
+\begin{equation}
+D_u = c_3A_u(c_1d_{pu*} + c_2d_{du*}) + G_s - \sum_{j=1}^{m}a_jp_{uj}
+\end{equation}
+\textbf{Objective Function}
+\begin{equation}
+w_1\sum_{j=1}^{m}\min{|\frac{1}{2}C_s - v_s|} + w_2\min{\sum_{u=1}^{n}D_u}
+\end{equation}
+\textbf{Constraints}
+\begin{equation}
+d_{pu*} \leq r_u
+\end{equation}
+\begin{equation}
+d_{du*} \leq r_u
+\end{equation}
+\begin{equation}
+v_s \leq C_s
+\end{equation}
+\begin{equation}
+p \geq B/n
+\end{equation}
+\begin{equation}
+\textnormal{all parameters except } G_s \textnormal{and } D_u \geq 0
+\end{equation}
 
 The Citi Bike network is built using available data from Citi Bike's website \cite{dataset}. The nodes represent different bike stations and the weighted links represent the number of trips made from one station to another in a certain period of time. We are also interested in a few node and edge attributes: each node (bike station) has an identification number, latitude and longitude, maximum capacity, and the current number of stored bikes; meanwhile, each edge (bike trip) has a bike identification number and user age and subscription type. These attributes are used as inputs in the convex optimization problem for the incentive-based pricing scheme.
 
@@ -78,7 +135,7 @@ User dissatisfaction: since the incentives system attempts to alternate the user
 %------------------------------------------------------------------------- 
 \Section{Experimental Setup and Practical Results}
 
-\Subsection{Network Analysis}
+\subsection{Network Analysis}
 Using the approach described in the previous section, a sample dynamic network is constructed to represent bike usage from Thursday to Saturday in a normal week. First, Citi Bike data from the first three days of September 2016 is extracted from the original data set in \cite{dataset} to generate a node table with 583 nodes and an edge list with more than 130,000 edges. Second, the node table and edge list are imported to Gephi as a dynamic network. The Gephi plugin \textit{Geo Layout} is used to arrange the nodes according to their geographic locations, while network properties are dynamically changed by filtering out edges outside a particular time window. In this analysis, the time window for edge filtering is set to one hour.\\
 
 %\begin{figure}[H]
@@ -93,10 +150,10 @@ Figure 1 shows the network at four different time intervals on September 1, 2016
 
 This experimental setup has some limitations. For example, the congestion level at each station (i.e. maximum capacity versus current number of stored bikes) is not taken into account because the initialization procedure has not been implemented. In addition, the distance between each pair of nodes is assumed to be the same while a more realistic analysis should also take into account the physical distance between stations. Lastly, this analysis has only exploited a very small subset of the available data.
 
-\Subsection{Initialization Procedure}
+\subsection{Initialization Procedure}
 A start time is identified, and it is assumed that no bikes are in the system at this start time. Over a specified time period, bikes are added to the system using incoming trip data for each station. Bikes are then tracked by identification number to determine which station they are at. At the end of this period, it is assumed that all bikes have been added to the system and each station is assigned with an initial number of bikes. Future trip data can now be used to determine the number of bikes at particular stations at any time after the initialization procedure.
 
-\Subsection{Decongesting Simulator}
+\subsection{Decongesting Simulator}
 
 In order to demonstrate whether or not the aforementioned optimization problem results in decongesting the Citi Bike network, a simulator is created using MATLAB. The simulator begins by using one month's worth of data to implement the initialization procedure, determining an initial state of the Citi Bike system. This initial state provides an accurate estimate of the number of bikes at each station in the network. Once this initial state is calculated, bike trip data entries are stepped through for a certain time period (defined by the user). The biker's intended start and end stations are defined to be the start and end stations from the bike trip data entry. Random incentives are given to the biker to change start and/or end stations, and the biker chooses to change stations with probability 0.5. As a result, the sum of the probabilities for choosing each unintended station is 0.5, and these probabilities are assigned randomly. These random incentives and probabilities will be replaced with more accurate incentives and probabilities once the optimization problem is solved.
 
