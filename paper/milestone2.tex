@@ -60,6 +60,21 @@ The Citi Bike network is built using available data from Citi Bike's website \ci
 
 The trip data in \cite{dataset} does not include explicit information about the addition or removal of bikes to the system or the transfer of bikes by truck from one station to another. Consequently, this project can only analyze bike trips from one station to another. In addition, there is no information about the number of bikes at particular stations at specific points in time. As a result, an initialization procedure is used to infer this information. A start time is identified, and it is assumed that no bikes are in the system at this start time. Over a specified time period, bikes are added to the system using incoming trip data for each station. Bikes are then tracked by identification number to determine which station they are at. At the end of this period, it is assumed that all bikes have been added to the system and each station is assigned with an initial number of bikes. Future trip data can now be used to determine the number of bikes at particular stations at any time after the initialization procedure.
 
+In order to formulate the convex optimization problem, an objective function and related constraints need to be clearly defined. First, we define a few parameters: denote the m stations in the Citi Bike network by the set S = {s1, s2, ... sm}, the maximum bike docks by Cs and the number of bikes available at time t at station s by v(s,t). Assume that a user u with subscription type S and age A intends to pick up a bike from station s(u,1) and head towards station s(u,2). As an attempt to influence the user's decision, the incentive system will suggest two lists of alternative stations, s(*,1) and s(*,2), with associated monetary incentives p*. %p* belongs to P, where P = {pmin, p2, ..., pmax} is a set of fixed prices. A budget B is allocated for the system for a time itnerval t. Lastly, ru represents the maximum distance u is willing to walk.
+
+These parameters are then used to define a set of sub functions:
+% bullet points?
+Congestion: Using the difference between the station's in degree and out degree to estimate the expected number of open docks in the future, the congestion level of bike station s is expressed as 
+\centerline{Cg=Cs-v(s,t)+ks(out degree-in degree)}
+
+Alternative Stations: the lists of alternative stations are determined by ru and the distance between the user's intended station and other bike stations in the set S.
+\centerline{if dist(s(u,1,2), si|si belongs to S) <= ru}
+\centerline{si belongs to s(*,1,2)}
+
+Monetary Incentives: the payment for the user is modeled as a function of 
+
+User dissatisfaction: since the incentives system attempts to alternate the user's initial decision, 
+
 %------------------------------------------------------------------------- 
 \Section{Experimental Setup and Practical Results}
 Using the approach described in the previous section, a sample dynamic network is constructed to represent bike usage from Thursday to Saturday in a normal week. First, Citi Bike data from the first three days of September 2016 is extracted from the original data set in \cite{dataset} to generate a node table with 583 nodes and an edge list with more than 130,000 edges. Second, the node table and edge list are imported to Gephi as a dynamic network. The Gephi plugin \textit{Geo Layout} is used to arrange the nodes according to their geographic locations, while network properties are dynamically changed by filtering out edges outside a particular time window. In this analysis, the time window for edge filtering is set to one hour.\\
