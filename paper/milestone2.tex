@@ -78,70 +78,51 @@ User dissatisfaction: since the incentives system attempts to alternate the user
 %------------------------------------------------------------------------- 
 \Section{Experimental Setup and Practical Results}
 
-\Subsection{Network Analysis}
-Using the approach described in the previous section, a sample dynamic network is constructed to represent bike usage from Thursday to Saturday in a normal week. First, Citi Bike data from the first three days of September 2016 is extracted from the original data set in \cite{dataset} to generate a node table with 583 nodes and an edge list with more than 130,000 edges. Second, the node table and edge list are imported to Gephi as a dynamic network. The Gephi plugin \textit{Geo Layout} is used to arrange the nodes according to their geographic locations, while network properties are dynamically changed by filtering out edges outside a particular time window. In this analysis, the time window for edge filtering is set to one hour.\\
+\subsection{Network Analysis}
+Based on the network definition presented in Section 3, a sample dynamic network is constructed to represent bike usage from Thursday to Saturday in a normal week. First, Citi Bike data from the first three days of September 2016 is extracted from the original data set in \cite{dataset} to generate a node table with 583 nodes and an edge list with more than 130,000 edges. Second, the node table and edge list are imported to Gephi as a dynamic network. The Gephi plugin \textit{Geo Layout} is used to arrange the nodes according to their geographic locations, while network properties are dynamically changed by filtering out edges outside a particular time window. In this analysis, the time window for edge filtering is set to one hour.\\
 
-%\begin{figure}[H]
-%	\centering
-%	\includegraphics[width=0.5\textwidth]{combined.jpg}
-%	\caption{Citi Bike network at four time intervals on September 1, 2016}
-%\end{figure}
+
 \centerline{\includegraphics[width=0.5\textwidth]{m2/combined.jpg}}
 \centerline{Figure 1: Citi Bike Network on September 1, 2016}
 
 Figure 1 shows the network at four different time intervals on September 1, 2016. From left to right, the figures represent the network between 1\textsc{am} and 2\textsc{am}, 7\textsc{am} and 8\textsc{am}, 1\textsc{pm} and 2\textsc{pm}, and 7\textsc{pm} and 8\textsc{pm}. Figure 2 illustrates how some of the network properties change over time. Every day, the maximum average node degree is observed between 4\textsc{pm} and 7\textsc{pm}, corresponding to the evening rush hour. On the two weekdays, there is also a secondary peak between 7\textsc{am} and 8\textsc{am}, reflecting the morning rush hour. As expected, this secondary peak is not present on September 3 since it is a Saturday. On the contrary, the network's average path length stays relatively consistent during the day and in the early evening. Bikers seem to take longer trips around midnight and in the morning (between 6\textsc{am} and 7\textsc{am}), while the trips between midnight and 6\textsc{am} tend to be much shorter. As for community structure, the network's modularity and formation of communities exhibit a periodic pattern; during the day, the network has high modularity and the nodes can be grouped into a few communities. At night, the network is less modular and only a handful of nodes can form communities with others.
 
-This experimental setup has some limitations. For example, the congestion level at each station (i.e. maximum capacity versus current number of stored bikes) is not taken into account because the initialization procedure has not been implemented. In addition, the distance between each pair of nodes is assumed to be the same while a more realistic analysis should also take into account the physical distance between stations. Lastly, this analysis has only exploited a very small subset of the available data.
+This network setup has three limitations. First, the congestion level at each station (i.e. maximum capacity versus current number of stored bikes) is not taken into account. Second, the distance between each pair of nodes is assumed to be the same while a more realistic analysis should also take into account the physical distance between stations. Third, only a very small subset of the available data is exploited.
 
-\Subsection{Initialization Procedure}
-A start time is identified, and it is assumed that no bikes are in the system at this start time. Over a specified time period, bikes are added to the system using incoming trip data for each station. Bikes are then tracked by identification number to determine which station they are at. At the end of this period, it is assumed that all bikes have been added to the system and each station is assigned with an initial number of bikes. Future trip data can now be used to determine the number of bikes at particular stations at any time after the initialization procedure.
+\centerline{\includegraphics[width=0.5\textwidth]{m2/plotterfigure.png}}
+\centerline{Figure 2: Citi Bike Network Properties}
 
-\Subsection{Decongesting Simulator}
+\subsection{Initialization Procedure}
+The objective of the initialization procedure is to determine an initial state of the Citi Bike system at any point in time. The procedure starts by identifying a start time and assuming that no bikes are initially in the system. Over a specified time period, bikes are added to the system using incoming trip data for each station and tracked by their identification numbers to determine which station they are at. At the end of this period, it is assumed that all bikes have been added to the system and each station is assigned with an initial number of bikes. Future trip data can now be used to determine the number of bikes at particular stations at any time after the initialization procedure.
 
-In order to demonstrate whether or not the aforementioned optimization problem results in decongesting the Citi Bike network, a simulator is created using MATLAB. The simulator begins by using one month's worth of data to implement the initialization procedure, determining an initial state of the Citi Bike system. This initial state provides an accurate estimate of the number of bikes at each station in the network. Once this initial state is calculated, bike trip data entries are stepped through for a certain time period (defined by the user). The biker's intended start and end stations are defined to be the start and end stations from the bike trip data entry. Random incentives are given to the biker to change start and/or end stations, and the biker chooses to change stations with probability 0.5. As a result, the sum of the probabilities for choosing each unintended station is 0.5, and these probabilities are assigned randomly. These random incentives and probabilities will be replaced with more accurate incentives and probabilities once the optimization problem is solved.
+\subsection{Decongestion Simulator}
 
-After the biker chooses start and end stations, the state of the Citi Bike system is updated with respect to the number of bikes at each station. Figure ~ shows the state of the Citi Bike system at different times over the course of one day when these random incentives and probabilities are implemented. On the other hand, Figure ~ shows the state of the Citi Bike system at the same times on the same day when these random incentives and probabilities are not implemented. As can be seen from the figures, the state of the network changes considerably when the randomized incentives are applied as opposed to when they are not applied. As a result, successfully solving and implementing the optimization problem should result in decongesting the Citi Bike network.
+In order to demonstrate whether or not the aforementioned optimization problem results in decongesting the Citi Bike network, a simulator is created using MATLAB. The simulator first uses an entire month's trip data to implement the initialization procedure and estimates how many bikes are at each station. Starting from the next month, trip data entries are stepped through for a user-specified time period. Each entry has a start station and an end station, which correspond to the biker's intended pick-up and drop-off stations defined in the optimization problem. If the congestion level is high for one or both of these intended stations (too empty for pick-up or too crowded for drop-off), the biker will be exposed to random incentives and a list of alternative stations. Currently we assume that the user has a probability of 0.5 to accept the incentives and go to one of the alternative stations, but the probability of choosing a particular station is randomized. For example, if alternative stations s1, s2, and s3 are available, one possibly scenario is that the biker has a probability of 0.1 to choose s1, 0.2 to choose s2, and 0.2 to choose s3. Once the optimization problem is solved, this randomized incentives and probability model will be replaced with more accurate incentives and probability distributions.
 
-The results obtained in this test run of the simulator have a few limitations, namely the fact that the data for each station's maximum capacity is incomplete, so an estimate for certain stations' maximum capacity must be used. In addition, data for bikes moved to other stations by truck is not provided, so this flow of bikes is unaccounted for. Because of this lack of data, the initial state of the Citi Bike system is slightly inaccurate.
+After the biker chooses a start and end stations, the state of the Citi Bike system is updated with respect to the number of bikes at each station. Figure 3(a) shows the state of the Citi Bike system at different times over the course of one day without providing incentives to the bikers and Figure 3(b) shows the state of the system when the randomized incentives and probability model is implemented. Evidently, the state of the network changes considerably when biker users are exposed to incentives. In light of this, we are confident that successfully solving and implementing the optimization problem will decongest the Citi Bike network.
 
-%% Insert figs
-%\begin{figure}[H]
-%	\centering
-%	\includegraphics[width=0.5\textwidth]{node_degree.jpg}
-%	\caption{Average node degree}
-%\end{figure}
+There are a few limitations in this simulator test run: first, there is no information about $10%$ of the bike stations' maximum capacity, and an estimate must be used. Second, there is no data about bikes being moved to other stations by trucks, and this flow of bikes is unaccounted for. Because of this lack of information, the initial state of the Citi Bike system is slightly inaccurate.
 
 %\centerline{\includegraphics[width=0.4\textwidth]{node_degree.jpg}}
 %\centerline{Figure 2: Average Node Degree}
 %\vspace{5mm}
 
-%\begin{figure}[H]
-%	\centering
-%	\includegraphics[width=0.5\textwidth]{path_length.jpg}
-%	\caption{Average path length}
-%\end{figure}
-
 %\centerline{\includegraphics[width=0.4\textwidth]{path_length.jpg}}
 %\centerline{Figure 3: Average Path Length}
 %\vspace{5mm}
 
-%\begin{figure}[H]
-%	\centering
-%	\includegraphics[width=0.5\textwidth]{communities.jpg}
-%	\caption{Modularity and number of communities}
-%\end{figure}
-
 %\centerline{\includegraphics[width=0.4\textwidth]{communities.jpg}}
 %\centerline{Figure 4: Modularity and Number of Communities}
 
-\centerline{\includegraphics[width=0.5\textwidth]{m2/plotterfigure.png}}
-\centerline{Figure 2: Citi Bike Network Properties}
-
 %------------------------------------------------------------------------- 
 \Section{Conclusion and Short-Term Plans}
-The basic methodology to construct the Citi Bike network is proposed in this work. Because certain information is not available about the bike stations' capacity, an initialization procedure is also proposed to estimate the number of bikes in the system and at each station. As a preliminary analysis, a sample network is constructed using data between September 1, 2016 and September 3, 2016 to evaluate network properties at different time intervals. In this work, Paul Griffioen extracted network information from the original dataset using MATLAB and Anthony Jin analyzed the network using Gephi.
+Buy mushrooms.
+This work proposes a framework to decongest the Citi Bike system via convex optimization. After constructing the system as a dynamic network, a MATLAB simulator is used to alternate the network's properties using monetary incentives. In addition, the objective function and constraints are defined for the related convex optimization problem. Currently, the framework uses a randomized incentives and probability model to illustrate how the incentives could affect the network. However, the framework will incorporate accurate incentives and probability distributions once the convex optimization problem is solved. In this work, Paul Griffioen focused on developing the MATLAB simulator and Anthony Jin focused on formulating the convex optimization problem.
 
-The next step of this project is to overcome the limitations of the experimental setup and construct the complete Citi Bike network. By Milestone 2, we will finish the network analysis and begin implementing the pricing scheme.
+Future work of this project will focus on solving the proposed optimization problem and integrate the results with the present framework. By Milestone 3, we will finish implementing the decongestion framework with convex optimization and propose the related pricing scheme.
+%The basic methodology to construct the Citi Bike network is proposed in this work. Because certain information is not available about the bike stations' capacity, an initialization procedure is also proposed to estimate the number of bikes in the system and at each station. As a preliminary analysis, a sample network is constructed using data between September 1, 2016 and September 3, 2016 to evaluate network properties at different time intervals. In this work, Paul Griffioen extracted network information from the original dataset using MATLAB and Anthony Jin analyzed the network using Gephi.
+
+%The next step of this project is to overcome the limitations of the experimental setup and construct the complete Citi Bike network. By Milestone 2, we will finish the network analysis and begin implementing the pricing scheme.
 
 %------------------------------------------------------------------------- 
 %\Section{Overview}
