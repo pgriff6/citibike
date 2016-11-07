@@ -101,6 +101,7 @@ D_u = c_3A_u(c_1d_{pu*} + c_2d_{du*}) + G_s - \sum_{j=1}^{m}a_jp_{uj}
 \end{equation}
 
 \subsection{Objective Function}
+ 
 
 \begin{equation}
 w_1\sum_{j=1}^{m}\min{|\frac{1}{2}C_s - v_s|} + w_2\min{\sum_{u=1}^{n}D_u}
@@ -108,6 +109,7 @@ w_1\sum_{j=1}^{m}\min{|\frac{1}{2}C_s - v_s|} + w_2\min{\sum_{u=1}^{n}D_u}
 
 \subsection{Constraints}
 
+The objective function has three constraints: first, the distance between each candidate station and a user's intended station must not exceed the maximum distance $r_u$ the user is willing to walk. Second, the budget available to each user in the network at time t is constraint by the total budget $B$ and the number of users in the system $n$. Third, in order to make practical sense, all definitions in the optimization problem must be positive except for the user dissatisfaction function $D_u$ and the congestion level function $G_s$.
 \begin{equation}
 d_{pu*} \leq r_u
 \end{equation}
