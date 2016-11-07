@@ -100,12 +100,16 @@ p_{max} = B/n
 D_u = c_3A_u(c_1d_{pu*} + c_2d_{du*}) + G_s - \sum_{j=1}^{m}a_jp_{uj}
 \end{equation}
 
+These sub-functions are primarily used to compute the bicycle congestion level and the user dissatisfaction at a particular station. The congestion level is simply equal to the station's number of currently open docks ($C_s - v_s$) plus an estimate as to how many docks will be taken or will be freed in the near future ($k(o_s - i_s)$). The user dissatisfaction is designed so that dissatisfaction increases with congestion level ($G_s$) and the distance the user has to walk to modify his or her original route ($c_3A_u(c_1d_{pu*} + c_2d_{du*})$). User dissatisfaction decreases with respect to the monetary incentive the user receives ($\sum_{j=1}^{m}a_jp_{uj}$).
+
 \subsection{Objective Function}
  
 
 \begin{equation}
 w_1\sum_{j=1}^{m}\min{|\frac{1}{2}C_s - v_s|} + w_2\min{\sum_{u=1}^{n}D_u}
 \end{equation}
+
+The objective function is designed such that overall user dissatisfaction is minimized ($w_2\min{\sum_{u=1}^{n}D_u}$). It is also designed so that each station is as close to half full as possible ($w_1\sum_{j=1}^{m}\min{|\frac{1}{2}C_s - v_s|}$). By designing the objective function in this manner, both user dissatisfaction and bicycle congestion for the Citi Bike system will be minimized.
 
 \subsection{Constraints}
 
@@ -154,17 +158,20 @@ Figure 1 shows the network at four different time intervals on September 1, 2016
 
 This network setup has three limitations. First, the congestion level at each station (i.e. maximum capacity versus current number of stored bikes) is not taken into account. Second, the distance between each pair of nodes is assumed to be the same while a more realistic analysis should also take into account the physical distance between stations. Third, only a very small subset of the available data is exploited.
 
-\subsection{Initialization Procedure}
-The objective of the initialization procedure is to determine an initial state of the Citi Bike system at any point in time. The procedure starts by identifying a start time and assuming that no bikes are initially in the system. Over a specified time period, bikes are added to the system using incoming trip data for each station and tracked by their identification numbers to determine which station they are at. At the end of this period, it is assumed that all bikes have been added to the system and each station is assigned with an initial number of bikes. Future trip data can now be used to determine the number of bikes at particular stations at any time after the initialization procedure.
-
 \centerline{\includegraphics[width=0.5\textwidth]{m2/plotterfigure.png}}
 \centerline{Figure 2: Citi Bike Network Properties}
 
-\subsection{Decongestion Simulator}
+\subsection{Initialization Procedure}
+The objective of the initialization procedure is to determine an initial state of the Citi Bike system at any point in time. The procedure starts by identifying a start time and assuming that no bikes are initially in the system. Over a specified time period, bikes are added to the system using incoming trip data for each station and tracked by their identification numbers to determine which station they are at. At the end of this period, it is assumed that all bikes have been added to the system and each station is assigned with an initial number of bikes. Future trip data can now be used to determine the number of bikes at particular stations at any time after the initialization procedure.
+
+\subsection{Citi Bike Network Simulator}
 
 In order to demonstrate whether or not the aforementioned optimization problem results in decongesting the Citi Bike network, a simulator is created using MATLAB. The simulator first uses an entire month's trip data to implement the initialization procedure and estimates how many bikes are at each station. Starting from the next month, trip data entries are stepped through for a user-specified time period. Each entry has a start station and an end station, which correspond to the biker's intended pick-up and drop-off stations defined in the optimization problem. If the congestion level is high for one or both of these intended stations (too empty for pick-up or too crowded for drop-off), the biker will be exposed to random incentives and a list of alternative stations. Currently we assume that the user has a probability of 0.5 to accept the incentives and go to one of the alternative stations, but the probability of choosing a particular station is randomized. For example, if alternative stations s1, s2, and s3 are available, one possibly scenario is that the biker has a probability of 0.1 to choose s1, 0.2 to choose s2, and 0.2 to choose s3. Once the optimization problem is solved, this randomized incentives and probability model will be replaced with more accurate incentives and probability distributions.
 
-After the biker chooses a start and end stations, the state of the Citi Bike system is updated with respect to the number of bikes at each station. Figure 3(a) shows the state of the Citi Bike system at different times over the course of one day without providing incentives to the bikers and Figure 3(b) shows the state of the system when the randomized incentives and probability model is implemented. Evidently, the state of the network changes considerably when biker users are exposed to incentives. In light of this, we are confident that successfully solving and implementing the optimization problem will decongest the Citi Bike network.
+After the biker chooses a start and end stations, the state of the Citi Bike system is updated with respect to the number of bikes at each station. Figure 3a shows the state of the Citi Bike system at different times over the course of one day without providing incentives to the bikers and Figure 3b shows the state of the system when the randomized incentives and probability model is implemented. Evidently, the state of the network changes considerably when biker users are exposed to incentives. In light of this, we are confident that successfully solving and implementing the optimization problem will decongest the Citi Bike network.
+
+\centerline{\includegraphics[width=0.5\textwidth]{m2/blankfigure.png}}
+\centerline{Figure 3: Citi Bike Simulator Visualization}
 
 There are a few limitations in this simulator test run: first, there is no information about $10\%$ of the bike stations' maximum capacity, and an estimate must be used. Second, there is no data about bikes being moved to other stations by trucks, and this flow of bikes is unaccounted for. Because of this lack of information, the initial state of the Citi Bike system is slightly inaccurate.
 
