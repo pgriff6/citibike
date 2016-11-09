@@ -61,7 +61,7 @@ for k = idx1:idx2
 %     end
     network_data{new_idxe,6} = network_data{new_idxe,6} + 1; % Increment current # bikes by 1
     clear start_list end_list idxs idxe A B%start_prob end_prob
-    if mod(k-idx1+1,50) == 0
+    if (mod(k-idx1+1,50) == 0) || (k == idx1)
         scatter(str2num(char(network_data(:,4))),str2num(char(network_data(:,3))),10+(2*cell2mat(network_data(:,6))),'filled','k');
         xlabel('Longitude');
         ylabel('Latitude');
