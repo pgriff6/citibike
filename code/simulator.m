@@ -40,7 +40,7 @@ for k = idx1:idx2
     % Update the state of the Citibike system accordingly
     network_data{idxs,6} = network_data{idxs,6} - 1; % Decrement current # bikes by 1
     network_data{idxe,6} = network_data{idxe,6} + 1; % Increment current # bikes by 1
-    scatter(str2num(char(network_data(:,3))),str2num(char(network_data(:,4))),10+(2*str2num(char(network_data(:,6)))),'filled');
+    scatter(str2num(char(network_data(:,3))),str2num(char(network_data(:,4))),10+(2*cell2mat(network_data(:,6))),'filled');
     clear start_list end_list start_prob end_prob
     if mod(k-idx1+1,50) == 0
         waitbar((k-idx1+1)/waittotal,h,['Simulating: ' num2str(((k-idx1+1)/waittotal)*100) '%']);
