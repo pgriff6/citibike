@@ -1,6 +1,9 @@
 function [network_data,bike_ids,counter] = initializer(data,list,idx1,network_data,flag,bike_ids,counter)
 
 % Create list of station ids, names, and locations
+if flag == 2
+    init = length(network_data(:,1));
+end
 h2 = waitbar(0,'Creating station information: 0%');
 waittotal2 = 2*length(data(:,4));
 for n = 1:length(data(:,4))
@@ -34,7 +37,7 @@ if flag == 1
     network_data{1,5} = 'Maximum # Bikes';
 elseif flag == 2
     [~,Locb] = ismember(network_data(:,2),list(:,2));
-    capacity = str2num(char(list(Locb(2:end,1),3)));
+    capacity = str2num(char(list(Locb(:,1),3)));
     station_count = length(find(capacity == -1)) + length(find(capacity == -2));
     capacity(capacity == -1,1) = max_default;
     capacity(capacity == -2,1) = max_default;
@@ -48,6 +51,9 @@ if flag == 1
     network_data{1,6} = 'Current # Bikes';
     network_data(:,7) = {{}};
     network_data{1,7} = 'Bike ID List';
+elseif flag == 2
+    network_data(init+1:end,6) = {0};
+    network_data(init+1:end,7) = {{}};
 end
 
 % Step through Citibike data, updating bike information for each station

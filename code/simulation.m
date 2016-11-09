@@ -121,7 +121,7 @@ while end_time_num < start_data_num(idx2,1)
 end
 
 % Get initial state of Citibike system up until start of simulation
-[network_data,~,~] = initializer(data,list,idx1,network_data,2,bike_ids,counter);
+[new_network_data,~,~] = initializer(data,list,idx1,network_data,2,bike_ids,counter);
 
 % Simulate Citibike system for a specified time period
-simulator(data,network_data,idx1,idx2);
+simulator(data,new_network_data,idx1,idx2);
