@@ -5,6 +5,7 @@ clc
 % FIX TIMING FOR INITIALIZATION AND SIMULATION!!! *****************************************************
 % FIX ASPECT THAT NEW BIKE IDS COULD COME INTO PLAY DURING THE SIMULATION!!! **************************
 % FIX ISSUE THAT STATIONS MAY HAVE MORE THAN THE MAXIMUM CAPACITY OF CURRENT BIKES!!! *****************
+% FIX ISSUE OF GOING OVER OR UNDER MAX OR MIN CAPACITY FOR A STATION!!! *******************************
 
 % Import bike trip data file for initialization
 disp('Select bike trip data file to use for initialization');
