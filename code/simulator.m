@@ -11,11 +11,10 @@ for k = idx1:idx2
     [~,idxe] = ismember(end_station,network_data(:,1));
     % Determine start and end stations nearby user's 1st choice
     [start_list,end_list] = nearby_stations(network_data,idxs,idxe,radius);
-    for j = 1:length(start_list(:,1))
-        [~,idxs(end+1,1)] = ismember(num2str(start_list(j,1)),network_data(:,1));
-    end
-    for i = 1:length(end_list(:,1))
-        [~,idxe(end+1,1)] = ismember(num2str(end_list(i,1)),network_data(:,1));
+    if isempty(start_list) == 0
+        for j = 1:length(start_list(:,1))
+            [~,idxs(end+1,1)] = ismember(num2str(start_list(j,1)),network_data(:,1));
+        end
     end
     A = [];
     for n = 1:length(idxs(:,1))
@@ -23,6 +22,11 @@ for k = idx1:idx2
     end
     [~,new_inds] = max(A);
     new_idxs = idxs(new_inds,1);
+    if isempty(end_list) == 0
+        for i = 1:length(end_list(:,1))
+            [~,idxe(end+1,1)] = ismember(num2str(end_list(i,1)),network_data(:,1));
+        end
+    end
     B = [];
     for m = 1:length(idxe(:,1))
         B(end+1,1) = network_data{idxe(m,1),6};
@@ -63,6 +67,7 @@ for k = idx1:idx2
     clear start_list end_list idxs idxe A B%start_prob end_prob
     if (mod(k-idx1+1,50) == 0) || (k == idx1)
         scatter(str2num(char(network_data(:,4))),str2num(char(network_data(:,3))),10+(2*cell2mat(network_data(:,6))),'filled','k');
+%         scatter(str2num(char(network_data([1:end-11 end-9:end],4))),str2num(char(network_data([1:end-11 end-9:end],3))),10+(2*cell2mat(network_data([1:end-11 end-9:end],6))),'filled','k');
         xlabel('Longitude');
         ylabel('Latitude');
         title(data{k,2});

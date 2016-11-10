@@ -6,7 +6,7 @@
 
 clear all
 [file_name file_path]=uigetfile({'*.jpeg;*.jpg;*.bmp;*.tif;*.tiff;*.png;*.gif','Image Files (JPEG, BMP, TIFF, PNG and GIF)'},'Select Images','multiselect','on');
-file_name=sort(file_name);
+file_name=sort_nat(file_name);
 [file_name2 file_path2]=uiputfile('*.gif','Save as animated GIF',file_path);
 lps=questdlg('How many loops?','Loops','Forever','None','Other','Forever');
 switch lps
