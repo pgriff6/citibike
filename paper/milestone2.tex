@@ -62,11 +62,11 @@ The trip data in \cite{dataset} does not include explicit information about the 
 
 \subsection{Parameters}
 
-To provide accurate monetary incentives to users, a convex optimization problem is formulated that seeks to minimize bicycle congestion and user dissatisfaction. The following terms, which are applied in a certain time interval $t$, are used in the formation of the convex optimization problem. $u = \{u_1, u_2, ..., u_n\}$ represents the set of $n$ users in the Citi Bike network, $A_u$ represents the age of user $u$, and $r_u$ represents the maximum distance user $u$ is willing to walk. $s = \{s_1, s_2, ..., s_m\}$ is the set of $m$ bike stations in the Citi Bike network, and $s_{pu}$ and $s_{du}$ represent user $u$'s intended pick-up and drop-off stations, respectively. As a result, $d_{pu} = \{d_{pu1}, d_{pu2}, ..., d_{pum}\}$ and $d_{du} = \{d_{du1}, d_{du2}, ..., d_{dum}\}$ denote the set of distances between the set of all stations $s$ and station $s_{pu}$ or $s_{du}$, respectively. $G_s$ represents the congestion level at station $s$, where $C_s$ denotes the maximum capacity at station $s$, $v_s$ denotes the current number of bikes at station $s$, and $o_s$ and $i_s$ denote the out-degree and in-degree of station $s$, respectively. $k$ is a constant that weights the impact of the out-degree and in-degree on the congestion level. Next, $s_{pu*} = \{s_{pu1}, s_{pu2}, ...\}$ and $s_{du*} = \{s_{du1}, s_{du2}, ...\}$ represent user $u$'s set of candidate stations for pick-up and drop-off, respectively. $d_{pu*} = \{d_{pu*1}, d_{pu*2}, ...\}$ and $d_{du*} = \{d_{du*1}, d_{du*2}, ...\}$ denote the set of distances between the set of stations $s_{pu*}$ and station $s_{pu}$ or between the set of stations $s_{du*}$ and station $s_{du}$, respectively. In addition, $p_u = \{p_{u1}, p_{u2}, ..., p_{max}\}$ represents the ordered set of payments offered to user $u$ where $p_{max}$ is the same for all users. $B$ represents the current budget for the entire Citi Bike network, and $S_u$ is a variable that equals $1$ if user $u$ is a subscriber and equals $0$ otherwise. $D_u$ denotes the dissatisfaction of user $u$, and $c_3$ is a constant that weights how important a user's age is in their dissatisfaction for walking from one station to another. $c_1 = \{c_{11}, c_{12}, ...\}$ and $c_2 = \{c_{21}, c_{22}, ...\}$ denote two sets of constants associated with the sets $d_{pu*}$ and $d_{du*}$, respectively, that weight the likelihood of user $u$ choosing to walk to a different station. Also, $a_j$ is a constant that weights the likelihood of user $u$ choosing payment option $p_{uj}$. Lastly, $w_1$ and $w_2$ represent constants that weight the importance of minimizing congestion and user dissatisfaction, respectively.
+To provide accurate monetary incentives to users, a convex optimization problem is formulated that seeks to minimize bicycle congestion and user dissatisfaction. The following terms, which are applied in a certain time interval $t$, are used in the formation of the convex optimization problem. $u = \{u_1, u_2, ..., u_n\}$ represents the set of $n$ users in the Citi Bike network, $A_u$ represents the age of user $u$, and $r_u$ represents the maximum distance user $u$ is willing to walk. $s = \{s_1, s_2, ..., s_m\}$ is the set of $m$ bike stations in the Citi Bike network, and $s_{pu}$ and $s_{du}$ represent user $u$'s intended pick-up and drop-off stations, respectively. As a result, $d_{pu} = \{d_{pu1}, d_{pu2}, ..., d_{pum}\}$ and $d_{du} = \{d_{du1}, d_{du2}, ..., d_{dum}\}$ denote the set of distances between the set of all stations $s$ and station $s_{pu}$ or $s_{du}$, respectively. $G_s$ represents the congestion level at station $s$, where $C_s$ denotes the maximum capacity at station $s$, $v_s$ denotes the current number of bikes at station $s$, and $o_s$ and $i_s$ denote the out-degree and in-degree of station $s$, respectively. $k$ is a constant that weights the impact of the out-degree and in-degree on the congestion level. Next, $s_{pu*} = \{s_{pu1}, s_{pu2}, ...\}$ and $s_{du*} = \{s_{du1}, s_{du2}, ...\}$ represent user $u$'s set of candidate stations for pick-up and drop-off, respectively. $d_{pu*} = \{d_{pu*1}, d_{pu*2}, ...\}$ and $d_{du*} = \{d_{du*1}, d_{du*2}, ...\}$ denote the set of distances between the set of stations $s_{pu*}$ and station $s_{pu}$ or between the set of stations $s_{du*}$ and station $s_{du}$, respectively. In addition, $p_u = \{p_{u1}, p_{u2}, ..., p_{max}\}$ represents the ordered set of payments offered to user $u$ where $p_{max}$ is the same for all users. $B$ represents the current budget for the entire Citi Bike network, and $S_u$ is a variable that equals $1$ if user $u$ is a subscriber and equals $0$ otherwise. $D_u$ denotes the dissatisfaction of user $u$, and $c_3$ is a constant that weights how important a user's age is in their dissatisfaction for walking from one station to another. $c_1 = \{c_{11}, c_{12}, ...\}$ and $c_2 = \{c_{21}, c_{22}, ...\}$ denote two sets of constants associated with the sets $d_{pu*}$ and $d_{du*}$, respectively, that weight the likelihood of user $u$ choosing to walk to a different station. Lastly, $a_j$ is a constant that weights the likelihood of user $u$ choosing payment option $p_{uj}$.
 
 \subsection{Sub-Functions}
 
-The following sub-functions are primarily used to compute the system congestion and the user dissatisfaction at a particular station. The congestion level is simply equal to the station's number of currently open docks ($C_s - v_s$) plus an estimate as to how many docks will be taken or will be freed in the near future ($k(o_s - i_s)$). The user dissatisfaction is designed so that dissatisfaction increases with congestion level ($G_s$) and the distance the user has to walk to modify his or her original route ($c_3A_u(c_1d_{pu*} + c_2d_{du*})$). User dissatisfaction decreases with respect to the monetary incentive the user receives ($\sum_{j=1}^{m}a_jp_{uj}$).
+The following sub-functions are primarily used to compute the system congestion level and the user dissatisfaction at a particular station. The congestion level is simply equal to the absolute value of half of the station's capacity ($\frac{1}{2}C_s$) minus the current number of bikes at the station ($v_s$) minus an estimate as to how many docks will be filled in the near future ($k(i_s - o_s)$). As a result, the congestion level describes the amount of fluctuation around a station's optimal capacity, which occurs when the station is half full. The user dissatisfaction is designed so that dissatisfaction increases with congestion level ($G_s$), the distance the user has to walk to modify his or her original route ($c_3A_u(c_1d_{pu*} + c_2d_{du*})$), and the user's age ($A_u$). However, user dissatisfaction decreases with respect to the monetary incentive the user receives ($\sum_{j=1}^{m}a_jp_{uj}$).
 
 \begin{equation}
 r_u = f(A_u)
@@ -78,7 +78,7 @@ d_{pu} = f(s_{pu}, s)
 d_{du} = f(s_{du}, s)
 \end{equation}
 \begin{equation}
-G_s = C_s - v_s + k(o_s - i_s)
+G_s = |\frac{1}{2}C_s - v_s - k(i_s - o_s)|
 \end{equation}
 \begin{equation}
 s_{pu*} = f(G_s, d_{pu}, r_u)
@@ -99,20 +99,20 @@ p_u = f(B, n, d_{pu*}, d_{du*}, A_u, S_u)
 p_{max} = B/n
 \end{equation}
 \begin{equation}
-D_u = c_3A_u(c_1d_{pu*} + c_2d_{du*}) + G_s - \sum_{j=1}^{m}a_jp_{uj}
+D_u = G_s + c_3A_u(c_1d_{pu*} + c_2d_{du*}) - \sum_{j=1}^{m}a_jp_{uj}
 \end{equation}
 
 \subsection{Objective Function}
  
- The objective function is designed such that overall user dissatisfaction is minimized ($w_2\min{\sum_{u=1}^{n}D_u}$). It is also designed so that each station is as close to half full as possible ($w_1\sum_{j=1}^{m}\min{|\frac{1}{2}C_s - v_s|}$). By designing the objective function in this manner, both user dissatisfaction and system congestion will be minimized.
+ The objective function is designed such that overall user dissatisfaction is minimized. In this way, the model allows for specific users to be more dissatisfied than others as long as overall user dissatisfaction is minimized.
 
 \begin{equation}
-w_1\sum_{j=1}^{m}\min{|\frac{1}{2}C_s - v_s|} + w_2\min{\sum_{u=1}^{n}D_u}
+\min{\sum_{u=1}^{n}D_u}
 \end{equation}
 
 \subsection{Constraints}
 
-The objective function has three constraints. First, the distance between each candidate station and a user's intended station must not exceed the maximum distance the user is willing to walk ($r_u$). Second, the budget available to each user in the network at time $t$ is constrained by the total budget ($B$) and the number of users in the system ($n$). Third, all definitions in the optimization problem must be positive except for the congestion level ($G_s$) and the user dissatisfaction ($D_u$).
+The objective function has a few constraints. First, the distance ($d_{pu*}$ and $d_{du*}$) between each candidate station and a user's intended station must not exceed the maximum distance the user is willing to walk ($r_u$). Second, each station's capacity ($C_s$) cannot be exceeded by the station's number of current bikes ($v_s$). Third, the budget available to each user ($p_u$) in the network for time interval $t$ is constrained by the total budget ($B$) and the number of users in the system ($n$).
 
 \begin{equation}
 d_{pu*} \leq r_u
@@ -124,10 +124,10 @@ d_{du*} \leq r_u
 v_s \leq C_s
 \end{equation}
 \begin{equation}
-p \leq B/n
+p_u \leq B/n
 \end{equation}
 \begin{equation}
-\textnormal{all parameters except } G_s \textnormal{and } D_u \geq 0
+0 \leq \textnormal{all parameters except } D_u
 \end{equation}
 
 %Lastly, the convex optimization problem is formulated in the form of an objective function with constraints. First, we define a few parameters: denote the m stations in the Citi Bike network by the set S = {s1, s2, ... sm}, the maximum bike docks by Cs and the number of bikes available at time t at station s by v(s,t). Assume that a user u with subscription type S and age A intends to pick up a bike from station s(u,1) and head towards station s(u,2). As an attempt to influence the user's decision, the incentive system will suggest two lists of alternative stations, s(*,1) and s(*,2), with associated monetary incentives p*. %p* belongs to P, where P = {pmin, p2, ..., pmax} is a set of fixed prices. A budget B is allocated for the system for a time itnerval t. Lastly, ru represents the maximum distance u is willing to walk.
@@ -166,14 +166,16 @@ The objective of the initialization procedure is to determine an initial state o
 
 \subsection{Citi Bike Network Simulation}
 
-In order to demonstrate whether or not the aforementioned optimization problem results in decongesting the Citi Bike network, a simulator is created using MATLAB. The simulator first uses an entire month's trip data to implement the initialization procedure and estimates how many bikes are at each station. Starting from the next month, trip data entries are stepped through for a user-specified time period. Each entry has a start station and an end station, which correspond to the biker's intended pick-up and drop-off stations defined in the optimization problem. If the congestion level is high for one or both of these intended stations (too empty for pick-up or too crowded for drop-off), the biker will be exposed to random incentives and a list of alternative stations. Currently we assume that the user has a probability of 0.5 to accept the incentives and go to one of the alternative stations, but the probability of choosing a particular station is randomized. For example, if alternative stations s1, s2, and s3 are available, one possibly scenario is that the biker has a probability of 0.1 to choose s1, 0.2 to choose s2, and 0.2 to choose s3. Once the optimization problem is solved, this randomized incentives and probability model will be replaced with more accurate incentives and probability distributions.
+In order to demonstrate whether or not the aforementioned optimization problem results in decongesting the Citi Bike network, a simulator is created using MATLAB. The simulator first uses an entire month's trip data to implement the initialization procedure and estimate how many bikes are at each station. Beginning with the next month, trip data entries are stepped through for a user-specified time period. Each entry has a start station and an end station, which correspond to the biker's intended pick-up and drop-off stations defined in the optimization problem. If the congestion level is high for one or both of these intended stations (too empty for pick-up or too crowded for drop-off), the biker will be exposed to random incentives and a list of alternative stations. Currently we assume that the user has a probability of 0.5 to accept the incentives and go to one of the alternative stations, but the probability of choosing a particular station is randomized. For example, if alternative stations s1, s2, and s3 are available, one possibly scenario is that the biker has a probability of 0.1 to choose s1, 0.2 to choose s2, and 0.2 to choose s3. Once the optimization problem is solved, this randomized incentives and probability model will be replaced with more accurate incentives and probability distributions.
 
-After the biker chooses a start and end stations, the state of the Citi Bike system is updated with respect to the number of bikes at each station. Figure 3a shows the state of the Citi Bike system at different times over the course of one day without providing incentives to the bikers and Figure 3b shows the state of the system when the randomized incentives and probability model is implemented. Evidently, the state of the network changes considerably when biker users are exposed to incentives. In light of this, we are confident that successfully solving and implementing the optimization problem will decongest the Citi Bike network.
+After the biker chooses start and end stations, the state of the Citi Bike system is updated with respect to the number of bikes at each station. Figure 3 shows the state of the Citi Bike system at 7\textsc{am} and 10\textsc{am} on March 3, 2016 when bikers are provided with no monetary incentives. Figure 4 shows the state of the system at the same times when bikers always choose incentives that will decongest the network. In each of these figures, the dots represent the stations, and the size of a dot is proportional to how many bikes are currently at that station. As can be seen in the figures, the network stays relatively congested when bikers are not provided with any incentives, but the network quickly decongests itself when bikers are provided with monetary incentives. In light of this, we are confident that successfully solving and implementing the optimization problem will decongest the Citi Bike network.
 
-\centerline{\includegraphics[width=0.5\textwidth]{m2/blankfigure.png}}
-\centerline{Figure 3: Citi Bike Simulator Visualization}
+\centerline{\includegraphics[width=0.25\textwidth]{m2/no_incentives_before.png}\includegraphics[width=0.25\textwidth]{m2/no_incentives_after.png}}
+\centerline{Figure 3: Citi Bike Network with No Incentives}
+\centerline{\includegraphics[width=0.25\textwidth]{m2/incentives_before.png}\includegraphics[width=0.25\textwidth]{m2/incentives_after.png}}
+\centerline{Figure 4: Citi Bike Network with Incentives}
 \hfill \break
-\indent There are a few limitations in this simulator test run: first, there is no information about $10\%$ of the bike stations' maximum capacity, and an estimate must be used. Second, there is no data about bikes being moved to other stations by trucks, and this flow of bikes is unaccounted for. Because of this lack of information, the initial state of the Citi Bike system is slightly inaccurate.
+\indent There are a few limitations with the simulator. First, there is no information about 10\% of the bike stations' maximum capacity, so an estimate must be used. Second, there is no data about bikes being moved to other stations by trucks, so this flow of bikes is unaccounted for. Because of this lack of information, the initial state of the Citi Bike system is slightly inaccurate.
 
 %\centerline{\includegraphics[width=0.4\textwidth]{node_degree.jpg}}
 %\centerline{Figure 2: Average Node Degree}
