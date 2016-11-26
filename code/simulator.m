@@ -1,4 +1,4 @@
-function simulator(data,network_data,idx1,idx2)
+function simulator(data,network_data,idx1,idx2,queue)
 
 % Use data from csv files to step through each bike trip, simulating users in the Citibike system
 radius = 1; % Consider nearby stations within this number of miles
@@ -59,11 +59,100 @@ for k = idx1:idx2
 %         end_station = num2str(end_list(m-1,1));
 %         [~,idxe] = ismember(end_station,network_data(:,1));
 %     end
+    % ***********************************************************************************************************
     % Update the state of the Citibike system accordingly
-%     if network_data{idxs,6} ~= 0
     network_data{new_idxs,6} = network_data{new_idxs,6} - 1; % Decrement current # bikes by 1
-%     end
-    network_data{new_idxe,6} = network_data{new_idxe,6} + 1; % Increment current # bikes by 1
+    if network_data{new_idxs,6} < 0
+        error('Bike station has a negative number of bikes');
+    end
+    % Add endtime to queue for future docking of bike
+    datime = strsplit(data{k,3});
+    time = datime{1,2};
+    time = time([1 2 4 5 7 8]);
+    date = datime{1,1};
+    if ismember('/',date)
+        tempdate = date(end-3:end);
+        if strcmp(date(2),'/')
+            tempdate(end+1) = '0';
+            tempdate(end+1) = date(1);
+            if strcmp(date(4),'/')
+                tempdate(end+1) = '0';
+                tempdate(end+1) = date(3);
+            elseif strcmp(date(5),'/')
+                tempdate(end+1) = date(3);
+                tempdate(end+1) = date(4);
+            else
+                error('Code should not reach this point');
+            end
+        elseif strcmp(date(3),'/')
+            tempdate(end+1) = date(1);
+            tempdate(end+1) = date(2);
+            if strcmp(date(5),'/')
+                tempdate(end+1) = '0';
+                tempdate(end+1) = date(4);
+            elseif strcmp(date(6),'/')
+                tempdate(end+1) = date(4);
+                tempdate(end+1) = date(5);
+            else
+                error('Code should not reach this point');
+            end
+        else
+            error('Code should not reach this point');
+        end
+        date = tempdate;
+    else
+        date = date([1 2 3 4 6 7 9 10]);
+    end
+    queue{end+1,1} = [date time];
+    queue{end,2} = new_idxe;
+    [~,ii] = sort(queue(:,1)); % Sort queue according to endtime
+    queue(:,:) = queue(ii,:);
+    % Determine current time for present docking of bikes from queue
+    datime2 = strsplit(data{k,2});
+    time2 = datime2{1,2};
+    time2 = time2([1 2 4 5 7 8]);
+    date2 = datime2{1,1};
+    if ismember('/',date2)
+        tempdate2 = date2(end-3:end);
+        if strcmp(date2(2),'/')
+            tempdate2(end+1) = '0';
+            tempdate2(end+1) = date2(1);
+            if strcmp(date2(4),'/')
+                tempdate2(end+1) = '0';
+                tempdate2(end+1) = date2(3);
+            elseif strcmp(date2(5),'/')
+                tempdate2(end+1) = date2(3);
+                tempdate2(end+1) = date2(4);
+            else
+                error('Code should not reach this point');
+            end
+        elseif strcmp(date2(3),'/')
+            tempdate2(end+1) = date2(1);
+            tempdate2(end+1) = date2(2);
+            if strcmp(date2(5),'/')
+                tempdate2(end+1) = '0';
+                tempdate2(end+1) = date2(4);
+            elseif strcmp(date2(6),'/')
+                tempdate2(end+1) = date2(4);
+                tempdate2(end+1) = date2(5);
+            else
+                error('Code should not reach this point');
+            end
+        else
+            error('Code should not reach this point');
+        end
+        date2 = tempdate2;
+    else
+        date2 = date2([1 2 3 4 6 7 9 10]);
+    end
+    % Dock bikes finishing their trips at this time at correct stations
+    while (isempty(queue) == 0) && (str2double(queue{1,1}) <= str2double([date2 time2]))
+        network_data{queue{1,2},6} = network_data{queue{1,2},6} + 1; % Increment current # bikes by 1
+        if network_data{queue{1,2},6} > network_data{queue{1,2},5}
+            error('Bike station has overflowed capacity');
+        end
+    end
+    % ***********************************************************************************************************
     clear start_list end_list idxs idxe A B%start_prob end_prob
     if (mod(k-idx1+1,50) == 0) || (k == idx1)
         scatter(str2num(char(network_data(:,4))),str2num(char(network_data(:,3))),10+(2*cell2mat(network_data(:,6))),'filled','k');

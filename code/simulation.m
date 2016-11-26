@@ -2,10 +2,10 @@ close all
 clear
 clc
 
-% FIX TIMING FOR INITIALIZATION AND SIMULATION!!! *****************************************************
-% FIX ASPECT THAT NEW BIKE IDS COULD COME INTO PLAY DURING THE SIMULATION!!! **************************
-% FIX ISSUE THAT STATIONS MAY HAVE MORE THAN THE MAXIMUM CAPACITY OF CURRENT BIKES!!! *****************
-% FIX ISSUE OF GOING OVER OR UNDER MAX OR MIN CAPACITY FOR A STATION!!! *******************************
+% FIX TIMING FOR INITIALIZATION AND SIMULATION!!! ***************************************************** -> fixed
+% FIX ISSUE OF USING INITIALIZER AS SIMULATION OF NO INCENTIVES!!! ************************************
+% FIX ISSUE OF GOING OVER OR UNDER MAX OR MIN CAPACITY FOR A STATION!!! ******************************* -> fixed
+% FIX ISSUE OF BIKES LEAVING THE SYSTEM DURING INITIALIZER!!! *****************************************
 
 % Import bike trip data file for initialization
 disp('Select bike trip data file to use for initialization');
@@ -22,9 +22,8 @@ for k = 1:15
     data(:,k) = x{1,k};  % Append file data
 end
 data(1,:) = []; % Delete header information
-[data(:,2),ii] = sort(data(:,2)); % Sort data according to start trip time
-data(:,1) = data(ii,1);
-data(:,3:end) = data(ii,3:end);
+[~,ii] = sort(data(:,2)); % Sort data according to start trip time
+data(:,:) = data(ii,:);
 
 % Import maximum capacity information for each station
 disp('Select maximum station capacity data file');
@@ -42,7 +41,7 @@ end
 list(1,:) = []; % Delete header information
 
 % Get initial state of Citibike system at end of first data file
-[network_data,bike_ids,counter] = initializer(data,{},length(data(:,1))+1,{'ID' 'Label' 'Latitude' 'Longitude'},1,{'Bike IDs'},0);
+[network_data,bike_ids,counter,total,queue] = initializer(data,{},length(data(:,1))+1,{'ID' 'Label' 'Latitude' 'Longitude'},1,{'Bike IDs'},0,0,{});
 clear data x k ii
 
 % Import bike trip data file for simulation
@@ -122,7 +121,8 @@ while end_time_num < start_data_num(idx2,1)
 end
 
 % Get initial state of Citibike system up until start of simulation
-[new_network_data,~,~] = initializer(data,list,idx1,network_data,2,bike_ids,counter);
+[new_network_data,~,~,~,new_queue] = initializer(data,list,idx1,network_data,2,bike_ids,counter,total,queue);
 
 % Simulate Citibike system for a specified time period
-simulator(data,new_network_data,idx1,idx2);
+simulator(data,new_network_data,idx1,idx2,new_queue(:,1:2));
+% Call initializer() again to simulate what would happen with no incentives
