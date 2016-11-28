@@ -70,14 +70,34 @@ In the Citi Bike network, a node's congestion level at any given time is predict
 To provide accurate monetary incentives to users, a convex optimization problem is formulated that seeks to minimize user dissatisfaction. Each term used in the formulation of this problem is applied in a certain time interval $t$. $u = \{u_1, u_2, ..., u_n\}$ represents the set of $n$ users in the Citi Bike network, $A_u$ represents the age of user $u$, and $r_u$ represents the maximum distance user $u$ is willing to walk. The authors in \cite{incentives} conducted a survey on users of a real-world Bike Sharing System in a European city to study the maximum walking distance that a user is willing to take. While roughly 20\% of the response were "unwilling to walk" or "unwilling to participate at any cost", most of the other participants are only willing to walk less or equal to one mile. Additionally, the results of the survey suggests that the relation between the cumulative willingness to walk and the maximum walking distance is a decaying exponential. In order to facilitate the optimization problem formulation (i.e. keep all variables continuous), we model $r_u$ as a decaying exponential ranging from $r_u(min)$=0.1 and $A_u(max)$=60 to $r_u(max)$=1 and $A_u(min)$=18. In other words, an elderly person will be offered with closer candidate stations and a young person will be offered with candidate stations that are further away. If a user is older than 60 years old, he or she will be assigned with $r_u$(min). Similarly, a biker younger than 18 years old is assigned with $r_u$(max). The equation is found to be
 \begin{equation}
 %r_u = f(A_u)
-r_u = 2.683e^{-0.055A_u}
+%r_u = 2.683e^{-0.055A_u}
+r_u = \left\{
+        \begin{array}{lll}
+            1 & \quad 0 \leq A_u \leq 18 \\
+            2.683e^{-0.055A_u} & \quad 18 \leq A_u \leq 60 \\
+            0.1 & \quad A_u \geq 60 \\
+        \end{array}
+    \right.
 \end{equation}
 $s = \{s_1, s_2, ..., s_m\}$ is the set of $m$ bike stations in the Citi Bike network, and $s_{pu}$ and $s_{du}$ represent user $u$'s intended pick-up and drop-off stations, respectively. As a result, $d_{pu} = \{d_{pu}^1, d_{pu}^2, ..., d_{pu}^m\}$ and $d_{du} = \{d_{du}^1, d_{du}^2, ..., d_{du}^m\}$ denote the set of distances between the set of all stations $s$ and station $s_{pu}$ or $s_{du}$, respectively.
+
 \begin{equation}
-d_{pu} = f(s_{pu}, s)
+dist(s_1,s_2) = 7922\arctan{\frac{\sqrt{a}}{\sqrt{1-a}}}
 \end{equation}
 \begin{equation}
-d_{du} = f(s_{du}, s)
+a = (\sin{\frac{1}{2}d_{lat}})^2+(\cos{l_{lat1}})(\cos{l_{lat2}})(\sin{\frac{1}{2}d_{lon}})^2
+\end{equation}
+\begin{equation}
+d_{lon} = l_{lon2} - l_{lon1}
+\end{equation}
+\begin{equation}
+d_{lat} = l_{lat2} - l_{lat1}
+\end{equation}
+\begin{equation}
+d_{pu} = dist(s_{pu}, s)
+\end{equation}
+\begin{equation}
+d_{du} = dist(s_{du}, s)
 \end{equation}
 $G_s$ represents the congestion level at station $s$, where $C_s$ denotes the maximum capacity at station $s$, $v_s$ denotes the current number of bikes at station $s$, and $o_s$ and $i_s$ denote the out-degree and in-degree of station $s$, respectively. $k$ is a constant that weights the impact of the out-degree and in-degree on the congestion level.
 \begin{equation}
@@ -85,25 +105,19 @@ G_s = |\frac{1}{2}C_s - v_s - k(i_s - o_s)|
 \end{equation}
 Next, $s_{puc} = \{s_{puc}^1, s_{puc}^2, ...\}$ and $s_{duc} = \{s_{duc}^1, s_{duc}^2, ...\}$ represent user $u$'s set of candidate stations for pick-up and drop-off, respectively.
 \begin{equation}
-s_{puc} = f(G_s, d_{pu}, r_u)
+s_{puc} = dist(G_s, d_{pu}, r_u)
 \end{equation}
 \begin{equation}
-s_{duc} = f(G_s, d_{du}, r_u)
+s_{duc} = dist(G_s, d_{du}, r_u)
 \end{equation}
 $d_{puc} = \{d_{puc}^1, d_{puc}^2, ...\}$ and $d_{duc} = \{d_{duc}^1, d_{duc}^2, ...\}$ denote the set of distances between the set of stations $s_{puc}$ and station $s_{pu}$ or between the set of stations $s_{duc}$ and station $s_{du}$, respectively.
 \begin{equation}
-d_{puc} = f(s_{pu}, s_{puc})
+d_{puc} = dist(s_{pu}, s_{puc})
 \end{equation}
 \begin{equation}
-d_{duc} = f(s_{du}, s_{duc})
+d_{duc} = dist(s_{du}, s_{duc})
 \end{equation}
-In addition, $p_u = \{p_u^1, p_u^2, ..., p_{max}\}$ represents the ordered set of payments offered to user $u$ where $p_{max}$ is the same for all users. $B$ represents the current budget for the entire Citi Bike network, and $S_u$ is a variable that equals $1$ if user $u$ is a subscriber and equals $0$ otherwise.
-\begin{equation}
-p_u = f(B, n, d_{puc}, d_{duc}, A_u, S_u)
-\end{equation}
-\begin{equation}
-p_{max} = B/n
-\end{equation}
+In addition, $p_u = \{p_u^1, p_u^2, ..., p_{max}\}$ represents the ordered set of payments offered to user $u$, and $B$ represents the current budget for the entire Citi Bike network.
 %$D_u$ denotes the dissatisfaction of user $u$, and $c_3$ is a constant that weights how important a user's age is in their dissatisfaction for walking from one station to another. $c_1 = \{c_1^1, c_1^2, ...\}$ and $c_2 = \{c_2^1, c_2^2, ...\}$ denote two sets of constants associated with the sets $d_{puc}$ and $d_{duc}$, respectively, that weight the likelihood of user $u$ choosing to walk to a different station. Lastly, $a_j$ is a constant that weights the likelihood of user $u$ choosing payment option $p_{uj}$.
 $D_u$ denotes the dissatisfaction of user $u$, and $w_1$, $w_2$, and $w_3$ are constants that weights the importance of a station's congestion level and a user's age and the payment he or she receives on the user's dissatisfaction. Additionally, $a_j$ is a constant that weights the likelihood of user $u$ taking an alternative pair of pick up and drop off stations and choosing the corresponding payment option $p_{uj}$. Since a user is less likely to take a longer alternative route, $a_j$ is biased in favor of the candidate stations that are closest to user $u$'s intended stations. In order to aggressively decongest the network, $w_1$ is assigned with a much higher value than $w_2$ and $w_3$.
 \begin{equation}
@@ -115,10 +129,10 @@ These sub-functions are primarily used to compute the congestion level at a part
 
 \subsection{Objective Function}
  
-The objective function is designed such that overall user dissatisfaction is minimized. In this way, the model allows for an increase in the dissatisfaction of certain users as long as the overall user dissatisfaction is decreased or minimized.
+The objective function is designed such that individual user dissatisfaction is minimized.
 
 \begin{equation}
-\min{\sum_{u=1}^{n}D_u}
+\min{D_u}
 \end{equation}
 
 \subsection{Constraints}
