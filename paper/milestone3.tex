@@ -60,11 +60,17 @@ The Citi Bike network is built using available data from Citi Bike's website \ci
 
 The trip data in \cite{dataset} does not include explicit information about the addition or removal of bikes to the system or the transfer of bikes by truck from one station to another. Consequently, this project can only analyze bike trips from one station to another. In addition, there is no information about the number of bikes at particular stations at specific points in time. As a result, an initialization procedure is used to infer this information (see Section 5.2).
 
+\subsection{Congestion Prediction Model}
+
+In the Citi Bike network, a node's congestion level at any given time is predicted using its in-degree and out-degree along with other known node attributes such as maximum capacity and current number of stored bikes. Additionally, the optimal congestion level of a node is to have the same amount of stored bikes and empty slots, allowing future users to either pick up or drop off a bike. This situation can be described by a simple math model such as equation 4 in Section 4.2.
+
+
 \subsection{Sub-Functions and Parameters}
 
-To provide accurate monetary incentives to users, a convex optimization problem is formulated that seeks to minimize user dissatisfaction. Each term used in the formulation of this problem is applied in a certain time interval $t$. $u = \{u_1, u_2, ..., u_n\}$ represents the set of $n$ users in the Citi Bike network, $A_u$ represents the age of user $u$, and $r_u$ represents the maximum distance user $u$ is willing to walk.
+To provide accurate monetary incentives to users, a convex optimization problem is formulated that seeks to minimize user dissatisfaction. Each term used in the formulation of this problem is applied in a certain time interval $t$. $u = \{u_1, u_2, ..., u_n\}$ represents the set of $n$ users in the Citi Bike network, $A_u$ represents the age of user $u$, and $r_u$ represents the maximum distance user $u$ is willing to walk. The authors in \cite{incentives} conducted a survey on users of a real-world Bike Sharing System in a European city to study the maximum walking distance that a user is willing to take. While roughly 20\% of the response were "unwilling to walk" or "unwilling to participate at any cost", most of the other participants are only willing to walk less or equal to one mile. Additionally, the results of the survey suggests that the relation between the cumulative willingness to walk and the maximum walking distance is a decaying exponential. In order to facilitate the optimization problem formulation (i.e. keep all variables continuous), we model $r_u$ as a decaying exponential ranging from $r_u(min)$=0.1 and $A_u(max)$=60 to $r_u(max)$=1 and $A_u(min)$=18. In other words, an elderly person will be offered with closer candidate stations and a young person will be offered with candidate stations that are further away. If a user is older than 60 years old, he or she will be assigned with $r_u$(min). Similarly, a biker younger than 18 years old is assigned with $r_u$(max). The equation is found to be
 \begin{equation}
-r_u = f(A_u)
+%r_u = f(A_u)
+r_u = 2.683e^{-0.055A_u}
 \end{equation}
 $s = \{s_1, s_2, ..., s_m\}$ is the set of $m$ bike stations in the Citi Bike network, and $s_{pu}$ and $s_{du}$ represent user $u$'s intended pick-up and drop-off stations, respectively. As a result, $d_{pu} = \{d_{pu}^1, d_{pu}^2, ..., d_{pu}^m\}$ and $d_{du} = \{d_{du}^1, d_{du}^2, ..., d_{du}^m\}$ denote the set of distances between the set of all stations $s$ and station $s_{pu}$ or $s_{du}$, respectively.
 \begin{equation}
@@ -181,7 +187,7 @@ In order to demonstrate whether or not the aforementioned optimization problem r
 \centerline{Figure 4: Citi Bike Network with Optimal Station Choices}
 \hfill \break
 \indent After the biker chooses start and end stations, the state of the Citi Bike system is updated with respect to the number of bikes at each station. Figure 3 shows the state of the Citi Bike system at 7\textsc{am} and 10\textsc{am} on March 3, 2016 when bikers are provided with no monetary incentives. Figure 4 shows the state of the system at the same times when bikers always choose pick-up and drop-off stations that will decongest the network. In each figure, the dots represent the stations, and the size of a dot is proportional to how many bikes are currently at that station. As shown, the network stays relatively congested when bikers are not provided with any incentives, but the network quickly decongests itself when all bikers choose optimal alternative stations (i.e. least congested stations within a one mile radius from the bikers' intended pick-up and drop-off stations). In light of this, we are confident that successfully solving and implementing the optimization problem will decongest the Citi Bike network.
-\newpage
+
 Although the simulator overcomes the limitations of the basic network setup described in Section 5.1, it has a few other limitations. First, there is no information about the maximum capacity for approximately 10\% of the bike stations, so an estimate must be used. Second, there is no data about bikes being moved to other stations by trucks, so this flow of bikes is unaccounted for. Because of this lack of information, the initial state of the Citi Bike system is slightly inaccurate.
 
 %\centerline{\includegraphics[width=0.4\textwidth]{node_degree.jpg}}
