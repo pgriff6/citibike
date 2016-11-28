@@ -79,8 +79,7 @@ r_u = \left\{
         \end{array}
     \right.
 \end{equation}
-$s = \{s_1, s_2, ..., s_m\}$ is the set of $m$ bike stations in the Citi Bike network, and $s_{pu}$ and $s_{du}$ represent user $u$'s intended pick-up and drop-off stations, respectively. As a result, $d_{pu} = \{d_{pu}^1, d_{pu}^2, ..., d_{pu}^m\}$ and $d_{du} = \{d_{du}^1, d_{du}^2, ..., d_{du}^m\}$ denote the set of distances between the set of all stations $s$ and station $s_{pu}$ or $s_{du}$, respectively.
-
+The distance (in miles) between a set of stations is calculated using equation 2, which relies on equations 3-5 to compute its value. Here, $l_{lat1}$, $l_{lat2}$, $l_{lon1}$, and $l_{lon2}$ represent the latitudes and longitudes of the two stations.
 \begin{equation}
 dist(s_1,s_2) = 7922\arctan{\frac{\sqrt{a}}{\sqrt{1-a}}}
 \end{equation}
@@ -93,6 +92,7 @@ d_{lon} = l_{lon2} - l_{lon1}
 \begin{equation}
 d_{lat} = l_{lat2} - l_{lat1}
 \end{equation}
+$s = \{s_1, s_2, ..., s_m\}$ is the set of $m$ bike stations in the Citi Bike network, and $s_{pu}$ and $s_{du}$ represent user $u$'s intended pick-up and drop-off stations, respectively. As a result, $d_{pu} = \{d_{pu}^1, d_{pu}^2, ..., d_{pu}^m\}$ and $d_{du} = \{d_{du}^1, d_{du}^2, ..., d_{du}^m\}$ denote the set of distances between the set of all stations $s$ and station $s_{pu}$ or $s_{du}$, respectively.
 \begin{equation}
 d_{pu} = dist(s_{pu}, s)
 \end{equation}
@@ -101,14 +101,14 @@ d_{du} = dist(s_{du}, s)
 \end{equation}
 $G_s$ represents the congestion level at station $s$, where $C_s$ denotes the maximum capacity at station $s$, $v_s$ denotes the current number of bikes at station $s$, and $o_s$ and $i_s$ denote the out-degree and in-degree of station $s$, respectively. $k$ is a constant that weights the impact of the out-degree and in-degree on the congestion level.
 \begin{equation}
-G_s = |\frac{1}{2}C_s - v_s - k(i_s - o_s)|
+G_s = \frac{1}{2}C_s - v_s - k(i_s - o_s)
 \end{equation}
-Next, $s_{puc} = \{s_{puc}^1, s_{puc}^2, ...\}$ and $s_{duc} = \{s_{duc}^1, s_{duc}^2, ...\}$ represent user $u$'s set of candidate stations for pick-up and drop-off, respectively.
+Next, $s_{puc} = \{s_{puc}^1, s_{puc}^2, ...\}$ and $s_{duc} = \{s_{duc}^1, s_{duc}^2, ...\}$ represent user $u$'s set of candidate stations for pick-up and drop-off, respectively. These sets of candidate stations will be determined by the fact that $d_{pu} \leq r_u$ and $d_{du} \leq r_u$. $s_{puc}$ will only contain stations with $G_s \leq 0$, and $s_{duc}$ will only contain stations with $G_s \geq 0$.
 \begin{equation}
-s_{puc} = dist(G_s, d_{pu}, r_u)
+s_{puc} = f(G_s, d_{pu}, r_u)
 \end{equation}
 \begin{equation}
-s_{duc} = dist(G_s, d_{du}, r_u)
+s_{duc} = f(G_s, d_{du}, r_u)
 \end{equation}
 $d_{puc} = \{d_{puc}^1, d_{puc}^2, ...\}$ and $d_{duc} = \{d_{duc}^1, d_{duc}^2, ...\}$ denote the set of distances between the set of stations $s_{puc}$ and station $s_{pu}$ or between the set of stations $s_{duc}$ and station $s_{du}$, respectively.
 \begin{equation}
@@ -122,7 +122,7 @@ In addition, $p_u = \{p_u^1, p_u^2, ..., p_{max}\}$ represents the ordered set o
 $D_u$ denotes the dissatisfaction of user $u$, and $w_1$, $w_2$, and $w_3$ are constants that weights the importance of a station's congestion level and a user's age and the payment he or she receives on the user's dissatisfaction. Additionally, $a_j$ is a constant that weights the likelihood of user $u$ taking an alternative pair of pick up and drop off stations and choosing the corresponding payment option $p_{uj}$. Since a user is less likely to take a longer alternative route, $a_j$ is biased in favor of the candidate stations that are closest to user $u$'s intended stations. In order to aggressively decongest the network, $w_1$ is assigned with a much higher value than $w_2$ and $w_3$.
 \begin{equation}
 %%D_u = w_1G_s + w_2A_u(c_1d_{puc} + c_2d_{duc}) - \sum_{j=1}^{m}a_jp_{uj}
-D_u = w_1G_s + w_2A_up_{uj}(d_{puc} + d_{duc}) - w_3\sum_{j=1}^{m}a_jp_{uj}
+D_u = w_1|G_s| + w_2A_up_{uj}(d_{puc} + d_{duc}) - w_3\sum_{j=1}^{m}a_jp_{uj}
 \end{equation}
 
 These sub-functions are primarily used to compute the congestion level at a particular station and a particular user's dissatisfaction. The congestion level is simply equal to the absolute value of half of the station's capacity ($\frac{1}{2}C_s$) minus the current number of bikes at the station ($v_s$) minus an estimate as to how many docks will be filled in the near future ($k(i_s - o_s)$). As a result, the congestion level describes the amount of fluctuation around a station's optimal capacity, which occurs when the station is half full. The user dissatisfaction is designed so that dissatisfaction increases with congestion level ($G_s$), the distance the user has to walk to modify his or her original route ($c_3A_u(c_1d_{puc} + c_2d_{duc})$), and the user's age ($A_u$). However, user dissatisfaction decreases with respect to the monetary incentive the user receives ($\sum_{j=1}^{m}a_jp_{uj}$).
