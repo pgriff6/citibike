@@ -35,7 +35,7 @@ for i = 1 : station_count
                      [start_latitude start_longitude]);
     start_distance = distdim(start_distance,'km','miles');
     if start_distance <= radius && start_distance ~= 0
-        start_list = [start_list; [str2num(stations{i,1}), start_distance]];
+        start_list = [start_list; [str2double(stations{i,1}), start_distance]];
     end
     % end station
     %end_distance = sqrt((stations{3}{i}-end_latitude).^2 + (stations{4}{i}-end_longitude).^2);
@@ -43,7 +43,7 @@ for i = 1 : station_count
                      [end_latitude, end_longitude]);
     end_distance = distdim(end_distance,'km','miles');
     if end_distance <= radius && end_distance ~= 0
-        end_list = [end_list; [str2num(stations{i,1}), end_distance]];
+        end_list = [end_list; [str2double(stations{i,1}), end_distance]];
     end
 end
 

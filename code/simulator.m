@@ -1,10 +1,18 @@
 function simulator(data,network_data,idx1,idx2,queue)
 
 % Use data from csv files to step through each bike trip, simulating users in the Citibike system
-radius = 1; % Consider nearby stations within this number of miles
 % h = waitbar(0,'Simulating: 0%');
 % waittotal = idx2 - idx1 + 1;
 for k = idx1:idx2
+    % Consider nearby stations within radius number of miles based on age Au
+    Au = str2double(data{k,14});
+    if Au <= 18
+        radius = 1;
+    elseif Au >= 60
+        radius = 0.1;
+    else
+        radius = 2.683*exp(-0.055*Au);
+    end
     start_station = data{k,4};
     end_station = data{k,8};
     [~,idxs] = ismember(start_station,network_data(:,1));
@@ -16,23 +24,40 @@ for k = idx1:idx2
             [~,idxs(end+1,1)] = ismember(num2str(start_list(j,1)),network_data(:,1));
         end
     end
-    A = [];
+    Cp = [];
+    Vp = [];
     for n = 1:length(idxs(:,1))
-        A(end+1,1) = network_data{idxs(n,1),6};
+        Cp(end+1,1) = network_data{idxs(n,1),5}; % Pick-up station's capacity
+        Vp(end+1,1) = network_data{idxs(n,1),6}; % Pick-up station's current number of bikes
     end
-    [~,new_inds] = max(A);
+    [Gp,new_inds] = min(Cp-Vp); % Gp = Cp-Vp is congestion level
     new_idxs = idxs(new_inds,1);
     if isempty(end_list) == 0
         for i = 1:length(end_list(:,1))
             [~,idxe(end+1,1)] = ismember(num2str(end_list(i,1)),network_data(:,1));
         end
     end
-    B = [];
+    Vd = [];
     for m = 1:length(idxe(:,1))
-        B(end+1,1) = network_data{idxe(m,1),6};
+        Vd(end+1,1) = network_data{idxe(m,1),6};
     end
-    [~,new_inde] = min(B);
+    [Gd,new_inde] = min(Vd); % NEED TO ADD SYSTEM KNOWLEDGE OF WHO WILL BE THERE
     new_idxe = idxe(new_inde,1);
+    if (new_inds == 1) && (new_inde == 1)
+        payment = 0;
+    else
+        dp = lldistkm([str2double(network_data{idxs(1,1),3}) str2double(network_data{idxs(1,1),4})],[str2double(network_data{new_idxs,3}) str2double(network_data{new_idxs,4})]);
+        dp = distdim(dp,'km','miles'); % dp is pickup station distance
+        dd = lldistkm([str2double(network_data{idxe(1,1),3}) str2double(network_data{idxe(1,1),4})],[str2double(network_data{new_idxe,3}) str2double(network_data{new_idxe,4})]);
+        dd = distdim(dd,'km','miles'); % dd is dropoff station distance
+        du = dp + dd; % du is total distance
+        payment = ; % FIGURE OUT PAYMENT FROM OPTIMIZATION SOLVER
+    end
+    % Probability model for whether or not person accepts payment option - FINISH THIS
+    if % If he/she does not accept the payment option - FINISH THIS
+        new_idxs = idxs(1,1);
+        new_idxe = idxe(1,1);
+    end
 %     % Temporary incentives using probability - original stations are given
 %     % probability 0.5 and other stations' probabilities add up to 0.5
 %     start_prob = 0; %0.5

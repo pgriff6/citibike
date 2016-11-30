@@ -6,6 +6,8 @@ clc
 % FIX ISSUE OF USING INITIALIZER AS SIMULATION OF NO INCENTIVES!!! ************************************
 % FIX ISSUE OF GOING OVER OR UNDER MAX OR MIN CAPACITY FOR A STATION!!! ******************************* -> fixed
 % FIX ISSUE OF BIKES LEAVING THE SYSTEM DURING INITIALIZER!!! *****************************************
+% Speed up simulation by changing date scheme in initializer and simulator for whole vector rather than 1 by 1
+% Undo str2double() conversion in nearby_stations b/c it gets converted back in simulator
 
 % Import bike trip data file for initialization
 disp('Select bike trip data file to use for initialization');
@@ -22,7 +24,7 @@ for k = 1:15
     data(:,k) = x{1,k};  % Append file data
 end
 data(1,:) = []; % Delete header information
-[~,ii] = sort(data(:,2)); % Sort data according to start trip time
+[~,ii] = sort_nat(data(:,2)); % Sort data according to start trip time
 data(:,:) = data(ii,:);
 
 % Import maximum capacity information for each station
@@ -59,9 +61,8 @@ for k = 1:15
     data(:,k) = x{1,k};  % Append file data
 end
 data(1,:) = []; % Delete header information
-[data(:,2),ii] = sort(data(:,2)); % Sort data according to start trip time
-data(:,1) = data(ii,1);
-data(:,3:end) = data(ii,3:end);
+[~,ii] = sort_nat(data(:,2)); % Sort data according to start trip time
+data(:,:) = data(ii,:);
 
 % Select start and end dates and times to run simulation
 disp('Select start date');
@@ -101,6 +102,9 @@ for kk = 1:length(start_times(:,1))
     start_data_num(kk,1) = str2double(start_times(kk,index+[1 2 4 5 7 8]));
 end
 start_cell = mat2cell(start_times,ones(1,length(start_times(:,1))),[index-1 length(start_times(1,:))-index+1]);
+if (strcmp(data{1,2}(5),'-') == 0) && strcmp(start_date(9),'0') && (strcmp(end_date(9),'0') == 0)
+    error('start_cell created incorrectly - update the code to account for things like going from 9/9/2016 to 9/10/2016');
+end
 if strcmp(data{1,2}(5),'-') == 0
     start_date = [start_date(6:7) '/' start_date(9:10) '/' start_date(1:4)];
     start_date(start_date(1,1:5) == '0') = [];
