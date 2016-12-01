@@ -61,45 +61,9 @@ h = waitbar(0,'Initializing: 0%');
 waittotal = idx1 - 1;
 for entry = 1:(idx1-1)
     % Determine current time for present docking of bikes from queue
-    datime2 = strsplit(data{entry,2});
-    time2 = datime2{1,2};
-    time2 = time2([1 2 4 5 7 8]);
-    date2 = datime2{1,1};
-    if ismember('/',date2)
-        tempdate2 = date2(end-3:end);
-        if strcmp(date2(2),'/')
-            tempdate2(end+1) = '0';
-            tempdate2(end+1) = date2(1);
-            if strcmp(date2(4),'/')
-                tempdate2(end+1) = '0';
-                tempdate2(end+1) = date2(3);
-            elseif strcmp(date2(5),'/')
-                tempdate2(end+1) = date2(3);
-                tempdate2(end+1) = date2(4);
-            else
-                error('Code should not reach this point');
-            end
-        elseif strcmp(date2(3),'/')
-            tempdate2(end+1) = date2(1);
-            tempdate2(end+1) = date2(2);
-            if strcmp(date2(5),'/')
-                tempdate2(end+1) = '0';
-                tempdate2(end+1) = date2(4);
-            elseif strcmp(date2(6),'/')
-                tempdate2(end+1) = date2(4);
-                tempdate2(end+1) = date2(5);
-            else
-                error('Code should not reach this point');
-            end
-        else
-            error('Code should not reach this point');
-        end
-        date2 = tempdate2;
-    else
-        date2 = date2([1 2 3 4 6 7 9 10]);
-    end
+    datetime2 = conv_datetime(data{entry,2});
     % Dock bikes finishing their trips at this time at correct stations
-    while (isempty(queue) == 0) && (str2double(queue{1,1}) <= str2double([date2 time2]))
+    while (isempty(queue) == 0) && (str2double(queue{1,1}) <= str2double(datetime2))
         network_data{queue{1,2},7}{end+1,1} = queue{1,3}; % Add bike ID to station list
         network_data{queue{1,2},6} = network_data{queue{1,2},6} + 1; % Increment current # of bikes by 1
         if network_data{queue{1,2},6} > network_data{queue{1,2},5}
@@ -150,44 +114,8 @@ for entry = 1:(idx1-1)
         error('End station ID not found');
     end
     % Add endtime to queue for future docking of bike
-    datime = strsplit(data{entry,3});
-    time = datime{1,2};
-    time = time([1 2 4 5 7 8]);
-    date = datime{1,1};
-    if ismember('/',date)
-        tempdate = date(end-3:end);
-        if strcmp(date(2),'/')
-            tempdate(end+1) = '0';
-            tempdate(end+1) = date(1);
-            if strcmp(date(4),'/')
-                tempdate(end+1) = '0';
-                tempdate(end+1) = date(3);
-            elseif strcmp(date(5),'/')
-                tempdate(end+1) = date(3);
-                tempdate(end+1) = date(4);
-            else
-                error('Code should not reach this point');
-            end
-        elseif strcmp(date(3),'/')
-            tempdate(end+1) = date(1);
-            tempdate(end+1) = date(2);
-            if strcmp(date(5),'/')
-                tempdate(end+1) = '0';
-                tempdate(end+1) = date(4);
-            elseif strcmp(date(6),'/')
-                tempdate(end+1) = date(4);
-                tempdate(end+1) = date(5);
-            else
-                error('Code should not reach this point');
-            end
-        else
-            error('Code should not reach this point');
-        end
-        date = tempdate;
-    else
-        date = date([1 2 3 4 6 7 9 10]);
-    end
-    queue{end+1,1} = [date time];
+    datetime1 = conv_datetime(data{entry,3});
+    queue{end+1,1} = datetime1;
     queue{end,2} = Locb4;
     queue{end,3} = data{entry,12};
     [~,ii] = sort(queue(:,1)); % Sort queue according to endtime

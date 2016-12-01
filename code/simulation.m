@@ -9,60 +9,26 @@ clc
 % Speed up simulation by changing date scheme in initializer and simulator for whole vector rather than 1 by 1
 % Undo str2double() conversion in nearby_stations b/c it gets converted back in simulator
 
-% Import bike trip data file for initialization
+% Select bike trip data file for initialization
 disp('Select bike trip data file to use for initialization');
 [filename,pathname] = uigetfile('*.csv','Select bike trip data file to use for initialization'); % Specify file to import
 if filename == 0
     error('No csv file selected');
 end
-data = {};
-disp(['Importing "' pathname filename '"']);
-fid = fopen([pathname filename],'r');
-x = textscan(fid,'%q%q%q%q%q%q%q%q%q%q%q%q%q%q%q','delimiter',',');
-fclose(fid);
-for k = 1:15
-    data(:,k) = x{1,k};  % Append file data
-end
-data(1,:) = []; % Delete header information
-[~,ii] = sort_nat(data(:,2)); % Sort data according to start trip time
-data(:,:) = data(ii,:);
 
-% Import maximum capacity information for each station
+% Select maximum capacity file information for each station
 disp('Select maximum station capacity data file');
 [filename2,pathname2] = uigetfile('*.csv','Select maximum station capacity data file'); % Specify file to import
 if filename2 == 0
     error('No csv file selected');
 end
-disp(['Importing "' pathname2 filename2 '"']);
-fid2 = fopen([pathname2 filename2],'r');
-y = textscan(fid2,'%s%s%s','delimiter',',');
-fclose(fid2);
-for i = 1:3
-    list(:,i) = y{1,i};
-end
-list(1,:) = []; % Delete header information
 
-% Get initial state of Citibike system at end of first data file
-[network_data,bike_ids,counter,total,queue] = initializer(data,{},length(data(:,1))+1,{'ID' 'Label' 'Latitude' 'Longitude'},1,{'Bike IDs'},0,0,{});
-clear data x k ii
-
-% Import bike trip data file for simulation
+% Select bike trip data file for simulation
 disp('Select bike trip data file to use for simulation');
 [filename3,pathname3] = uigetfile('*.csv','Select bike trip data file to use for simulation'); % Specify file to import
 if filename3 == 0
     error('No csv file selected');
 end
-data = {};
-disp(['Importing "' pathname3 filename3 '"']);
-fid3 = fopen([pathname3 filename3],'r');
-x = textscan(fid3,'%q%q%q%q%q%q%q%q%q%q%q%q%q%q%q','delimiter',',');
-fclose(fid3);
-for k = 1:15
-    data(:,k) = x{1,k};  % Append file data
-end
-data(1,:) = []; % Delete header information
-[~,ii] = sort_nat(data(:,2)); % Sort data according to start trip time
-data(:,:) = data(ii,:);
 
 % Select start and end dates and times to run simulation
 disp('Select start date');
@@ -89,6 +55,46 @@ start_time = get(text1,'String');
 end_time = get(text2,'String');
 close all
 pause(0.1);
+
+% Import bike trip data file for initialization
+data = {};
+disp(['Importing "' pathname filename '"']);
+fid = fopen([pathname filename],'r');
+x = textscan(fid,'%q%q%q%q%q%q%q%q%q%q%q%q%q%q%q','delimiter',',');
+fclose(fid);
+for k = 1:15
+    data(:,k) = x{1,k};  % Append file data
+end
+data(1,:) = []; % Delete header information
+[~,ii] = sort_nat(data(:,2)); % Sort data according to start trip time
+data(:,:) = data(ii,:);
+
+% Import maximum capacity information for each station
+disp(['Importing "' pathname2 filename2 '"']);
+fid2 = fopen([pathname2 filename2],'r');
+y = textscan(fid2,'%s%s%s','delimiter',',');
+fclose(fid2);
+for i = 1:3
+    list(:,i) = y{1,i};
+end
+list(1,:) = []; % Delete header information
+
+% Get initial state of Citibike system at end of first data file
+[network_data,bike_ids,counter,total,queue] = initializer(data,{},length(data(:,1))+1,{'ID' 'Label' 'Latitude' 'Longitude'},1,{'Bike IDs'},0,0,{});
+clear data x k ii
+
+% Import bike trip data file for simulation
+data = {};
+disp(['Importing "' pathname3 filename3 '"']);
+fid3 = fopen([pathname3 filename3],'r');
+x = textscan(fid3,'%q%q%q%q%q%q%q%q%q%q%q%q%q%q%q','delimiter',',');
+fclose(fid3);
+for k = 1:15
+    data(:,k) = x{1,k};  % Append file data
+end
+data(1,:) = []; % Delete header information
+[~,ii] = sort_nat(data(:,2)); % Sort data according to start trip time
+data(:,:) = data(ii,:);
 
 % Find indices for subset of data to use in simulation
 disp('Preparing initialization and simulation');
@@ -129,4 +135,4 @@ end
 
 % Simulate Citibike system for a specified time period
 simulator(data,new_network_data,idx1,idx2,new_queue(:,1:2));
-% Call initializer() again to simulate what would happen with no incentives
+% Call simulator() again to simulate what would happen with no incentives
