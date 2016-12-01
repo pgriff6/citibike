@@ -37,24 +37,24 @@ Anthony Jin\\Dept. of Electrical and Computer Engineering\\Carnegie Mellon Unive
 \thispagestyle{empty}
 
 %------------------------------------------------------------------------- 
-\Section{Abstract}
+\section{Abstract}
 
 The issue of congestion in bicycle sharing systems is prevalent in many cities. This project proposes an incentive-based pricing scheme for New York City's Citi Bike system that minimizes bicycle congestion. It approaches bicycle sharing systems from a network perspective, analyzing and optimizing the network by providing monetary incentives to users with the intent of modifying network properties. These monetary incentives are part of a much larger optimization problem designed to minimize both user dissatisfaction and bicycle congestion. To demonstrate the effectiveness of this approach, the Citi Bike system is modeled and simulated using MATLAB, where monetary incentives are given to users such that user dissatisfaction and bicycle congestion are minimized.
 
 %------------------------------------------------------------------------- 
-\Section{Introduction and Motivation}
+\section{Introduction and Motivation}
 
 The Citi Bike system, located in New York City, is one of many bicycle sharing systems that exist in the world. Since users unlock a bike at one station and drop it off at another station, bikes tend to follow unidirectional flows at various times of the day. As a result, some stations have few to no bikes at them while others are completely full.
 
 This unidirectional flow of bikes frustrates users who would like to pick up a bike from an empty station or drop off a bike at a full station. As a result, this project seeks to address the issue of system congestion through a pricing scheme based on the optimization of network structure and dynamics. In addition, alteration of the network topology to reduce congestion will be explored through optimal placement of nodes (stations). Looking at the problem from a network perspective is a unique approach that has not been considered with previous work. In the end, this project seeks to analyze the Citi Bike network and minimize congestion by modifying its structure through changing people's incentives.
 
 %------------------------------------------------------------------------- 
-\Section{Previous Work}
+\section{Previous Work}
 
 Previous work has taken many viewpoints to solve the bike sharing congestion problem. The work in \cite{incentives} proposes a dynamic incentives system that involves future traffic prediction, truck-based re-positioning policies, and schema to compute monetary incentives for users. The authors in \cite{redistribution} use a similar approach, combining staff-based dynamic vehicle distribution and real-time pricing incentives for customers. In contrast, \cite{management} and \cite{redistribution} look at the inventory management of individual bike-sharing stations and formulate appropriate convex optimization problems. Similar to the aforementioned approaches, this project will address the congestion problem as a convex optimization problem and introduce a congestion-based pricing scheme to modify user incentives. Unlike prior work, however, it takes a network standpoint and models the Citi Bike system as a dynamic network.
 
 %------------------------------------------------------------------------- 
-\Section{Approach}
+\section{Approach}
 
 The Citi Bike network is built using available data from Citi Bike's website \cite{dataset}. The nodes represent different bike stations and the weighted links represent the number of trips made from one station to another in a certain time period $t$. A few node and edge attributes are also of interest. Each node (bike station) has an identification number, latitude and longitude, maximum capacity, and current number of stored bikes. Meanwhile, each edge (bike trip) has a bike identification number, user age, and subscription type. These attributes are used as inputs in the convex optimization problem for the incentive-based pricing scheme.
 
@@ -67,7 +67,7 @@ In the Citi Bike network, a node's congestion level at any given time is predict
 
 \subsection{Sub-Functions and Parameters}
 
-To provide accurate monetary incentives to users, a convex optimization problem is formulated that seeks to minimize user dissatisfaction. Each term used in the formulation of this problem is applied in a certain time interval $t$. $u = \{u_1, u_2, ..., u_n\}$ represents the set of $n$ users in the Citi Bike network, $A_u$ represents the age of user $u$, and $r_u$ represents the maximum distance user $u$ is willing to walk. The authors in \cite{incentives} conducted a survey on users of a real-world Bike Sharing System in a European city to study the maximum walking distance that a user is willing to take. While roughly 20\% of the response were "unwilling to walk" or "unwilling to participate at any cost", most of the other participants are only willing to walk less or equal to one mile. Additionally, the results of the survey suggests that the relation between the cumulative willingness to walk and the maximum walking distance is a decaying exponential. In order to facilitate the optimization problem formulation (i.e. keep all variables continuous), we model $r_u$ as a decaying exponential ranging from $r_u(min)$=0.1 and $A_u(max)$=60 to $r_u(max)$=1 and $A_u(min)$=18. In other words, an elderly person will be offered with closer candidate stations and a young person will be offered with candidate stations that are further away. If a user is older than 60 years old, he or she will be assigned with $r_u$(min). Similarly, a biker younger than 18 years old is assigned with $r_u$(max). The equation is found to be
+To provide accurate monetary incentives to users, a convex optimization problem is formulated that seeks to minimize user dissatisfaction. Each term used in the formulation of this problem is applied in a certain time interval $t$. $u = \{u_1, u_2, ..., u_n\}$ represents the set of $n$ users in the Citi Bike network, $A_u$ represents the age of user $u$, and $r_u$ represents the maximum distance user $u$ is willing to walk. The authors in \cite{incentives} conducted a survey on users of a real-world Bike Sharing System in an European city to introduce their incentives scheme and elicit user preferences about additional distance the users are willing walk. While roughly 20\% of the response were "unwilling to walk" or "unwilling to participate at any cost", most of the other participants are only willing to walk less than or equal to one mile. Additionally, the results of the survey suggests that the relation between the cumulative willingness to walk and the maximum walking distance is a decaying exponential. In order to facilitate the optimization problem formulation (i.e. keep all variables continuous), we model $r_u$ as a decaying exponential ranging from $r_u(min)$=0.1 to $r_u(max)$=1. We also expect a direct correlation between a user's age and his or her willingness to walk an additional distance. In other words, when given the same incentives,the additional distance an elderly person is willing to walk is less than that of a young person. Due to this consideration, we use $A_u(max)=60$ and $A_u(min)=18$ to constraint $r_u$ within the 0.1 to 1 mile range. If a user is older than 60 years old, he or she is assigned with $r_u$(min). Similarly, a user younger than 18 years old is assigned with $r_u$(max). In summary, $r_u$ is expressed as
 \begin{equation}
 %r_u = f(A_u)
 %r_u = 2.683e^{-0.055A_u}
@@ -175,7 +175,7 @@ p_u \leq B/n
 %User dissatisfaction: since the incentives system attempts to alternate the user's initial decision, 
 
 %------------------------------------------------------------------------- 
-\Section{Experimental Setup and Practical Results}
+\section{Experimental Setup and Practical Results}
 
 \subsection{Network Analysis}
 Based on the network definition presented in Section 3, a sample dynamic network is constructed to represent bike usage from Thursday to Saturday in a normal week. First, Citi Bike data from the first three days of September 2016 is extracted from the original data set in \cite{dataset} to generate a node table with 583 nodes and an edge list with more than 130,000 edges. Second, the node table and edge list are imported to Gephi as a dynamic network. The Gephi plugin \textit{Geo Layout} is used to arrange the nodes according to their geographic locations, while network properties are dynamically changed by filtering out edges outside a particular time window. In this analysis, the time window for edge filtering is set to one hour.\\
@@ -222,7 +222,7 @@ Although the simulator overcomes the limitations of the basic network setup desc
 %\centerline{Figure 4: Modularity and Number of Communities}
 
 %------------------------------------------------------------------------- 
-\Section{Conclusion and Short-Term Plans}
+\section{Conclusion and Short-Term Plans}
 This work proposes a network-based framework to decongest the Citi Bike system via convex optimization. After constructing the system as a dynamic network, a MATLAB simulator is used to modify the network's properties using monetary incentives. In addition, the objective function and constraints are defined for the convex optimization problem. Currently, the framework assumes bikers choose crowded pick-up stations and relatively empty drop-off stations in order to illustrate how an optimal choice of incentives will affect the network. However, this framework will be replaced by accurate incentives and probability distributions once the convex optimization problem is solved. In this work, Paul Griffioen focused on developing the MATLAB simulator and Anthony Jin focused on formulating the convex optimization problem.
 
 Future work of this project will focus on solving the proposed optimization problem and integrating the results with the present framework. By Milestone 3, we will finish implementing the decongestion framework with convex optimization and propose the related pricing scheme.
