@@ -1,11 +1,16 @@
 function simulator(data,network_data,idx1,idx2,queue)
 
-B = 0; % budget during time interval t
-t = 0; % time interval, in minutes
+B = 1000; % budget during time interval t
+t = 10; % time interval, in minutes
+w1 = 1;
+w2 = 1;
+w3 = 1;
+flag = 1; % 1 for incentives, 0 for no incentives
 
 % Use data from csv files to step through each bike trip, simulating users in the Citibike system
 % h = waitbar(0,'Simulating: 0%');
 % waittotal = idx2 - idx1 + 1;
+overall_Du = 0;
 for k = idx1:idx2
     % Determine current time for present docking of bikes from queue
     datetime2 = conv_datetime(data{k,2});
@@ -13,8 +18,10 @@ for k = idx1:idx2
     while (isempty(queue) == 0) && (str2double(queue{1,1}) <= str2double(datetime2))
         network_data{queue{1,2},6} = network_data{queue{1,2},6} + 1; % Increment current # bikes by 1
         if network_data{queue{1,2},6} > network_data{queue{1,2},5}
-            error('Bike station has overflowed capacity');
+            warning('Bike station has overflowed capacity');
+            network_data{queue{1,2},5} = network_data{queue{1,2},6}; % Dynamically increase max capacity of station
         end
+        queue(1,:) = []; % Delete entry in queue
     end
     % Compute N, the number of users in the system during time interval t
     start_min = str2double(datetime2(11:12))-t;
@@ -57,19 +64,26 @@ for k = idx1:idx2
     end
     % Consider nearby stations within radius number of miles based on age Au
     Au = str2double(datetime2(1:4)) - str2double(data{k,14});
-    if Au <= 18
-        radius = 1;
-    elseif Au >= 60
-        radius = 0.1;
-    else
-        radius = 2.683*exp(-0.055*Au);
+    if flag == 1
+        if Au <= 18
+            radius = 1;
+        elseif Au >= 60
+            radius = 0.1;
+        else
+            radius = 2.683*exp(-0.055*Au);
+        end
     end
     start_station = data{k,4};
     end_station = data{k,8};
     [~,idxs] = ismember(start_station,network_data(:,1));
     [~,idxe] = ismember(end_station,network_data(:,1));
     % Determine start and end stations nearby user's 1st choice
-    [start_list,end_list] = nearby_stations(network_data,idxs,idxe,radius);
+    if flag == 1
+        [start_list,end_list] = nearby_stations(network_data,idxs,idxe,radius);
+    else
+        start_list = [];
+        end_list = [];
+    end
     if isempty(start_list) == 0
         for j = 1:length(start_list(:,1))
             [~,idxs(end+1,1)] = ismember(num2str(start_list(j,1)),network_data(:,1));
@@ -104,36 +118,40 @@ for k = idx1:idx2
                 Vd(v,1) = Vd(v,1) + 1;
             end
         end
-        % Determine bikes not yet traveling that will arrive at station before endtime
-        for w = k:length(data(:,1))
-            datetime3 = conv_datetime(data{w,2});
-            if str2double(datetime3) > str2double(datetime1)
-                break
-            end
-            if strcmp(data{w,8},network_data{idxe(v,1),1})
-                datetime4 = conv_datetime(data{w,3});
-                if str2double(datetime4) <= str2double(datetime1)
-                    Vd(v,1) = Vd(v,1) + 1;
-                end
-            end
-        end
+%         % Determine bikes not yet traveling that will arrive at station before endtime
+%         for w = k:length(data(:,1))
+%             datetime3 = conv_datetime(data{w,2});
+%             if str2double(datetime3) > str2double(datetime1)
+%                 break
+%             end
+%             if strcmp(data{w,8},network_data{idxe(v,1),1})
+%                 datetime4 = conv_datetime(data{w,3});
+%                 if str2double(datetime4) <= str2double(datetime1)
+%                     Vd(v,1) = Vd(v,1) + 1;
+%                 end
+%             end
+%         end
     end
     [Gd,new_inde] = min(Vd); % Gd = Vd is congestion level
     new_idxe = idxe(new_inde,1);
     % If the best option is what the user intended to do, do nothing; otherwise, run convex optimization to compute the payment
     if (new_inds == 1) && (new_inde == 1)
-        Du = 0;
+        Du = (w2*(Gp-network_data{new_idxs,5}))+(w3*(Gd-network_data{new_idxe,5})); % Calculate user dissatisfaction
     else
         dp = lldistkm([str2double(network_data{idxs(1,1),3}) str2double(network_data{idxs(1,1),4})],[str2double(network_data{new_idxs,3}) str2double(network_data{new_idxs,4})]);
         dp = distdim(dp,'km','miles'); % dp is pickup station distance
         dd = lldistkm([str2double(network_data{idxe(1,1),3}) str2double(network_data{idxe(1,1),4})],[str2double(network_data{new_idxe,3}) str2double(network_data{new_idxe,4})]);
         dd = distdim(dd,'km','miles'); % dd is dropoff station distance
         du = dp + dd; % du is total distance
-        [payment,Du] = solve_cvx(B,N,Au,du,Gp,network_data{new_idxs,5},Gd,network_data{new_idxe,5}); % Calculate payment using convex optimization
+        [payment,Du] = solve_cvx(w1,w2,w3,B,N,Au,du,Gp,network_data{new_idxs,5},Gd,network_data{new_idxe,5}); % Calculate payment using convex optimization
         % Probability model for whether or not person accepts payment option
         if rand > payment/(B/N) % If he/she does not accept the payment option
-            new_idxs = idxs(1,1);
-            new_idxe = idxe(1,1);
+            if (Gp == network_data{new_idxs,5}) || (Gd == network_data{new_idxe,5})
+                % Person must take incentive if congestion at start or end station is maxed out
+            else
+                new_idxs = idxs(1,1);
+                new_idxe = idxe(1,1);
+            end
         end
     end
 %     % Temporary incentives using probability - original stations are given
@@ -165,7 +183,7 @@ for k = idx1:idx2
     % Update the state of the Citibike system accordingly
     network_data{new_idxs,6} = network_data{new_idxs,6} - 1; % Decrement current # bikes by 1
     if network_data{new_idxs,6} < 0
-        error('Bike station has a negative number of bikes');
+        warning('Bike station has a negative number of bikes');
     end
     % Add endtime to queue for future docking of bike
     queue{end+1,1} = datetime1;
@@ -174,13 +192,16 @@ for k = idx1:idx2
     queue(:,:) = queue(ii,:);
     clear start_list end_list idxs idxe Cp Vp Vd%start_prob end_prob
     % Network visualization
+    overall_Du = overall_Du + Du;
     if (mod(k-idx1+1,50) == 0) || (k == idx1)
         scatter(str2num(char(network_data(:,4))),str2num(char(network_data(:,3))),10+(2*cell2mat(network_data(:,6))),'filled','k');
 %         scatter(str2num(char(network_data([1:end-11 end-9:end],4))),str2num(char(network_data([1:end-11 end-9:end],3))),10+(2*cell2mat(network_data([1:end-11 end-9:end],6))),'filled','k');
         xlabel('Longitude');
         ylabel('Latitude');
         title(data{k,2});
-        print(num2str(k-idx1+1),'-dpng');
+        text(-73.95,40.795,'Average Du:','FontSize',16);
+        text(-73.95,40.785,num2str(overall_Du/(k-idx1+1)),'FontSize',16);
+%         print(num2str(k-idx1+1),'-dpng');
         pause(0.01);
 %         waitbar((k-idx1+1)/waittotal,h,['Simulating: ' num2str(((k-idx1+1)/waittotal)*100) '%']);
     end
