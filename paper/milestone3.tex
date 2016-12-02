@@ -95,12 +95,12 @@ d_{lon} = l_{lon2} - l_{lon1}
 d_{lat} = l_{lat2} - l_{lat1}
 \end{equation}
 
-For a set of $m$ bike stations in the network, $s = \{s_1, s_2, ..., s_m\}$, each station is associated with a maximum capacity $C_s$ and two congestion levels at any given time. Assume that at time $t$, there at $v_s$ bikes stored at station $s$. $G_{spu}$ is the congestion of $s$ for a user who wants to pick up a bike, measuring the percentage of open docks at the station. Similarly, $G_{sdu}$ is the congestion of $s$ for a user who wants to drop off a bike, measuring the percentage of stored bikes at the station.
+For a set of $m$ bike stations in the network, $s = \{s_1, s_2, ..., s_m\}$, each station is associated with a maximum capacity $C_s$ and two congestion levels at any given time. Assume that at time $t$, there at $v_s$ bikes stored at station $s$. $G_{spu}$ is the congestion of $s$ for a user who wants to pick up a bike, measuring the percentage of open docks at the station. Similarly, $G_{sdu}$ is the congestion of $s$ for a user who wants to drop off a bike, measuring the percentage of stored bikes at the station when the user arrives. Here, $v_{sf}$ represents the number of bikes that are added or subtracted from $v_s$ while the user travels to the drop-off station.
 \begin{equation}
 G_{spu} = \frac{C_s-v_s}{C_s}
 \end{equation}
 \begin{equation}
-G_{sdu} = \frac{v_s}{C_s}
+G_{sdu} = \frac{v_s+v_{sf}}{C_s}
 \end{equation}
 
 For a user $u$ who wants to start a bike trip at time $t$, $s_{pu}$ and $s_{du}$ represent his or her intended pick-up and drop-off stations, respectively. In the meantime, the candidate pick-up and drop-off stations, denoted by $s_{puc} = \{s_{puc}^1, s_{puc}^2, ..., s_{puc}^i\}$ and $s_{duc} = \{s_{duc}^1, s_{duc}^2, ..., s_{duc}^j\}$, lie within a radius of $r_u$ from $s_{pu}$ and $s_{du}$, respectively. Since $u$ is only willing to walk a maximum additional distance $r_u$, the total distance between the intended stations and the candidate stations must be no more than $r_u$. Thus, the set $\{\{s_{puc}^k,s_{duc}^l\}, ...\}$ denotes all combinations of elements in $s_{puc}$ and $s_{duc}$ where
@@ -158,27 +158,27 @@ The proposed payment $p_u$ to user $u$ is used as an incentive to change $u$'s b
 
 \subsection{Objective Function}
  
-The objective of the optimization problem is to output a payment $p_u$ such that Poor Service Quality (PSQ) is minimized. From the perspective of user $u$ traveling from station $s_1$ (with maximum capacity $C_{s_1}$) to station $s_2$ (with maximum capacity $C_{s_2}$), PSQ is affected by three factors: the congestion of the intended pick-up station ($G_{s_1pu}$), the congestion of the intended drop-off station ($G_{s_2du}$), and the additional distance $u$ has to walk ($d_u$). Correspondingly, we propose three functions to model the effect of $p_u$ on each of these factors.
+The objective of the optimization problem is to output a payment $p_u$ such that Poor Service Quality ($PSQ$) is minimized. From the perspective of user $u$ traveling from station $s_{pu}$ (with maximum capacity $C_{spu}$) to station $s_{du}$ (with maximum capacity $C_{sdu}$), $PSQ$ is affected by three factors: the additional distance $u$ has to walk ($d_u$), the congestion of the intended pick-up station ($G_{spu}$), and the congestion of the intended drop-off station ($G_{sdu}$). Correspondingly, we propose three functions to model the effect of $p_u$ on each of these factors.
 \begin{equation}
-G_{pu}(p_u) = C_{s1}\sqrt{1-\frac{n}{B} \times p_u}
+d(p_u) = \sqrt{\frac{n}{B}p_u}
 \end{equation}
 \begin{equation}
-G_{du}(p_u) = C_{s2}\sqrt{1-\frac{n}{B} \times p_u}
+G_{pu}(p_u) = C_{spu}\sqrt{1-\frac{n}{B}p_u}
 \end{equation}
 \begin{equation}
-d(p_u) = \sqrt{\frac{n}{B} \times p_u}
+G_{du}(p_u) = C_{sdu}\sqrt{1-\frac{n}{B}p_u}
 \end{equation}
-
-Last, PSQ is defined as
+Poor Service Quality ($PSQ$), the term to minimize, is defined as
 \begin{equation}
 \begin{split}
-PSQ = w_1A_u(d_u - d(p_u)) + w_2(G_{s_1pu} - G_{pu}(p_u)) \\ + w_3(G_{s_2du} - G_{du}(p_u))
+PSQ = w_1A_u(d_u - d(p_u)) + w_2(G_{spu} - G_{pu}(p_u)) \\ + w_3(G_{sdu} - G_{du}(p_u))
 \end{split}
 \end{equation}
+where $w_1$, $w_2$, and $w_3$ are weights that weigh how much the additional walking distance ($d_u$), the pick-up station congestion ($G_{spu}$), and the drop-off station congestion ($G_{sdu}$) increase the Poor Service Quality ($PSQ$). The user's age $A_u$ is used here to account for the correlation between age and willingness to walk an additional distance.
 
-Figure 1 illustrates an example of these proposed functions for an 18-year-old user using arbitrary bike station data. Based on the definitions of pick-up and drop-off congestions, a concave-down square root function is used to formulate $G_{pu}(p_u)$ and $G_{du}(p_u)$ so that a greater incentive ($p_u$) is offered to $u$ if he or she chooses to pick up a bike from a station with high drop-off congestion (not enough open docks) or drop off a bike at a station with high pick-up congestion (not enough bikes). These functions correspond to Figure 1(a) and Figure 1(b). In contrast, a concave-up square root function is used to provide greater incentives if $u$ is willing to walk a longer distance. This effect is illustrated in Figure 1(c). In addition, the three functions are constrained by the range of $r_u$, total budget ($B$), and current number of active users ($n$) as mentioned above.
+Figure 1 illustrates an example of these proposed functions for an 18-year-old user with arbitrary bike station data. Based on the definitions of pick-up and drop-off congestions, a concave square root function is used to formulate $G_{pu}(p_u)$ and $G_{du}(p_u)$ so that a greater incentive ($p_u$) is offered to $u$ if he or she picks up a bike from a station with low pick-up congestion (many current bikes) or drop off a bike at a station with low drop-off congestion (many open docks). These functions correspond to Figure 1(a) and Figure 1(b), respectively. In addition, a concave square root function is used to provide greater incentives ($p_u$) if $u$ is willing to walk a longer distance $d(p_u)$. This effect is illustrated in Figure 1(c).
 
-While the three aforementioned factors tend to increase PSQ, they are balanced by the three proposed functions with $p_u$ as the variable. Since all three proposed functions are concave (a square root function is always concave), the summation of them guarantees the convexity of PSQ. $w_1$, $w_2$, and $w_3$ are constants assigned to each term to weight their importance during optimization, and the user age $A_u$ is used in the problem formulation to represent the correlation between age and willingness to walk an additional distance. This convexity is demonstrated in Figure 1(d).
+While the three aforementioned factors tend to increase $PSQ$, they are balanced by the three proposed functions of $p_u$. Since all three proposed functions are concave, the summation of the negative values of them guarantees the convexity of $PSQ$. This convexity is demonstrated in Figure 1(d).
 %$w_2$ and $w_3$ should be the same to reflect the equal importance of the pick-up and drop-off congestions, and $w_1$ should be significantly smaller than $w_2$ and $w_3$ since the main concern of the problem is system congestion.
 
 \centerline{\includegraphics[width=0.5\textwidth]{m2/cvx_example.png}}
@@ -187,9 +187,7 @@ While the three aforementioned factors tend to increase PSQ, they are balanced b
 
 \indent In summary, the objective function of this optimization problem is
 \begin{equation}
-\begin{split}
-\min(PSQ)\\ Subject\ to\ 0 \leq p_u \leq B/n
-\end{split}
+\min(PSQ) \text{ subject to } 0 \leq p_u \leq B/n
 \end{equation}
 
 %\subsection{Constraints}
