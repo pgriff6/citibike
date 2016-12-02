@@ -105,8 +105,9 @@ G_{sdu} = \frac{v_s}{C_s}
 
 For a user $u$ who wants to start a bike trip at time $t$, $s_{pu}$ and $s_{du}$ represent his or her intended pick-up and drop-off stations, respectively. In the meantime, the candidate pick-up and drop-off stations, denoted by $s_{puc} = \{s_{puc}^1, s_{puc}^2, ..., s_{puc}^i\}$ and $s_{duc} = \{s_{duc}^1, s_{duc}^2, ..., s_{duc}^j\}$, lie within a radius of $r_u$ from $s_{pu}$ and $s_{du}$, respectively. Since $u$ is only willing to walk a maximum additional distance $r_u$, the total distance between the intended stations and the candidate stations must be no more than $r_u$. Thus, the set $\{\{s_{puc}^k,s_{duc}^l\}, ...\}$ denotes all combinations of elements in $s_{puc}$ and $s_{duc}$ where
 \begin{equation}
-dist(s_{puc}^k, s_{pu}) + dist(s_{duc}^l, s_{du}) \leq r_u
+d_u = dist(s_{puc}^k, s_{pu}) + dist(s_{duc}^l, s_{du}) \leq r_u
 \end{equation}
+Here, $d_u$ represents the total distance the user would have to walk to use the pair of alternative stations.
 %\begin{equation}
 %d_{pu} = dist(s_{pu}, s)
 %\end{equation}
@@ -157,7 +158,7 @@ The proposed payment $p_u$ to user $u$ is used as an incentive to change $u$'s b
 
 \subsection{Objective Function}
  
-The objective of the optimization problem at hand is to minimize Poor Service Quality (PSQ). From the perspective of the user $u$ traveling from station $s1$ (with maximum capacity $C_{s1}$) to station $s2$ (with maximum capacity $C_{s2}$), PSQ is affected by four factors: the congestion of the intended pick-up station ($G_{s1}(pu)$), the congestion of the intended drop-off station ($G_{s2}(du)$), and the additional distance $u$ has to walk ($d_u$) as a function of his or her age. Correspondingly, we propose three functions to model the effect of $p_u$ on each of these factors.
+The objective of the optimization problem is to output a payment $p_u$ such that Poor Service Quality (PSQ) is minimized. From the perspective of user $u$ traveling from station $s_1$ (with maximum capacity $C_{s_1}$) to station $s_2$ (with maximum capacity $C_{s_2}$), PSQ is affected by three factors: the congestion of the intended pick-up station ($G_{s_1pu}$), the congestion of the intended drop-off station ($G_{s_2du}$), and the additional distance $u$ has to walk ($d_u$). Correspondingly, we propose three functions to model the effect of $p_u$ on each of these factors.
 \begin{equation}
 G_{pu}(p_u) = C_{s1}\sqrt{1-\frac{n}{B} \times p_u}
 \end{equation}
@@ -171,7 +172,7 @@ d(p_u) = \sqrt{\frac{n}{B} \times p_u}
 Last, PSQ is defined as
 \begin{equation}
 \begin{split}
-PSQ = w_1A_u(d_u - d(p_u)) + w_2(G_{s1}(pu) - G_{pu}(p_u)) \\ + w_3(G_{s2}(du) - G_{du}(p_u))
+PSQ = w_1A_u(d_u - d(p_u)) + w_2(G_{s_1pu} - G_{pu}(p_u)) \\ + w_3(G_{s_2du} - G_{du}(p_u))
 \end{split}
 \end{equation}
 
