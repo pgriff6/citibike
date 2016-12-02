@@ -66,13 +66,9 @@ The objective of the initialization procedure is to determine an initial state o
 
 Lastly, congestion in the Citi Bike network is defined in two ways. First, a bike station with few no bikes is congested for a user who wants to pick up a bike. Second, a bike station with few or no open docks is congested for a user who wants to drop off a bike. In either case, the user experiences a Poor Service Quality (PSQ). To decongest the network by providing accurate monetary incentives to the users, we formulate a convex optimization problem that seeks to minimize PSQ.
 
-\subsection{Congestion Prediction Model}
-
-In the Citi Bike network, a node's congestion level at any given time is predicted using its in-degree and out-degree along with other known node attributes such as maximum capacity and current number of stored bikes. Additionally, the optimal congestion level of a node is to have the same amount of stored bikes and empty slots, allowing future users to either pick up or drop off a bike. This situation can be described by a simple math model such as equation 4 in Section 4.2.
-
 \subsection{Sub-Functions and Parameters}
 
-The convex optimization problem is formulated within a time interval $t$. $u = \{u_1, u_2, ..., u_n\}$ represents the set of $n$ users in the Citi Bike network, $A_u$ represents the age of user $u$, and $r_u$ represents the maximum distance user $u$ is willing to walk. The authors in \cite{incentives} conducted a survey on users of a real-world Bike Sharing System in an European city to introduce their incentives scheme and elicit user preferences about additional distance they are willing walk. While roughly 20\% of the response were "unwilling to walk" or "unwilling to participate at any cost", most of the other participants are only willing to walk less than or equal to one mile. Additionally, the results of the survey suggests that the relation between the cumulative distribution of willingness to walk and the maximum walking distance is a decaying exponential (namely, more people are willing to walk a shorter additional distance than a longer one). We also speculate that there is a direct correlation between a user's age and his or her willingness to walk an additional distance. In other words, when given the same incentives,the additional distance an elderly person is willing to walk is less than that of a young person. In light of this, we model $r_u$ as a decaying exponential ranging from $r_u(min)$=0.1 to $r_u(max)$=1. Due to these consideration, we model $r_u$ as a decaying exponential function of $A_u$. $r_u$ is constrained by $A_u(min)=18$ to $A_u(max)=60$ and ranges from 0.1 to 1 mile. If a user is older than 60 years old, he or she is automatically assigned with $r_u$(min). Similarly, a user younger than 18 years old is assigned with $r_u$(max). In summary, $r_u$ is expressed as
+The convex optimization problem is formulated within a time interval $t$. $u = \{u_1, u_2, ..., u_n\}$ represents the set of $n$ users in the Citi Bike network, $A_u$ represents the age of user $u$, and $r_u$ represents the maximum distance user $u$ is willing to walk. The authors in \cite{incentives} conducted a survey on users of a real-world Bike Sharing System in an European city to introduce their incentives scheme and elicit user preferences about additional distance they are willing walk. While roughly 20\% of the responses were "unwilling to walk" or "unwilling to participate at any cost," most of the other participants were only willing to walk less than or equal to one mile. Additionally, the results of the survey suggest that the relation between the cumulative distribution of willingness to walk and the maximum walking distance is a decaying exponential (namely, more people are willing to walk a shorter additional distance than a longer one). We also speculate that there is a direct correlation between a user's age and his or her willingness to walk an additional distance. In other words, when given the same incentives, the additional distance an elderly person is willing to walk is less than that of a young person. In light of this, we model $r_u$ as a decaying exponential function of $A_u$ ranging from $r_u(min) = 0.1$ to $r_u(max) = 1$, where the units of $r_u$ are miles. If a user is more than 60 years old, he or she is automatically assigned with $r_u(min)$. Similarly, a user younger than 18 years old is assigned with $r_u(max)$. In summary, $r_u$ is expressed as
 \begin{equation}
 %r_u = f(A_u)
 %r_u = 2.683e^{-0.055A_u}
@@ -84,6 +80,7 @@ r_u = \left\{
         \end{array}
     \right.
 \end{equation}
+
 The distance (in miles) between a pair of stations is calculated using equation 2, which relies on equations 3-5 to compute its value. Here, $l_{lat1}$, $l_{lat2}$, $l_{lon1}$, and $l_{lon2}$ represent the latitudes and longitudes of the two stations.
 \begin{equation}
 dist(s_1,s_2) = 7922\arctan{\frac{\sqrt{a}}{\sqrt{1-a}}}
@@ -97,16 +94,18 @@ d_{lon} = l_{lon2} - l_{lon1}
 \begin{equation}
 d_{lat} = l_{lat2} - l_{lat1}
 \end{equation}
-For a set of $m$ bike stations in the network, $s = \{s_1, s_2, ..., s_m\}$, each station is associated with a maximum capacity $C_s$ and two congestion levels at any given time. Assume that at time $t$, there at $v_s$ bikes stored at station $s$. $G_s(pu)$ is the congestion of $s$ for a user who wants to pick up a bike, measuring the percentage of open docks to the station's maximum capacity. Similarly, $G_s(du)$ is the congestion of $s$ for a user who wants to drop off a bike, measuring the percentage of stored bikes to the station's maximum capacity.
+
+For a set of $m$ bike stations in the network, $s = \{s_1, s_2, ..., s_m\}$, each station is associated with a maximum capacity $C_s$ and two congestion levels at any given time. Assume that at time $t$, there at $v_s$ bikes stored at station $s$. $G_{spu}$ is the congestion of $s$ for a user who wants to pick up a bike, measuring the percentage of open docks at the station. Similarly, $G_{sdu}$ is the congestion of $s$ for a user who wants to drop off a bike, measuring the percentage of stored bikes at the station.
 \begin{equation}
-G_s(pu) = \frac{C_s-v_s}{C_s}
+G_{spu} = \frac{C_s-v_s}{C_s}
 \end{equation}
 \begin{equation}
-G_s(du) = \frac{v_s}{C_s}
+G_{sdu} = \frac{v_s}{C_s}
 \end{equation}
-For a user $u$ who wants to start a bike trip at time $t$, $s_{pu}$ and $s_{du}$ represent his or her intended pick-up and drop-off stations, respectively. In the meantime, the candidate stations, denoted by $s_{puc} = \{s_{puc}^1, s_{puc}^2, ..., s_{puc}^i\}$ and $s_{duc} = \{s_{duc}^1, s_{duc}^2, ..., s_{duc}^j\}$, are within a radius of $r_u$ from $s_{pu}$ and $s_{du}$, respectively. Since $u$ is only willing to walk a maximum additional distance of $r_u$, the total distance between the intended stations and the candidate stations must be no more than $r_u$. Thus, $cand = \{\{s_{pup}^i,s_{dup}^j\}, ...\}$ denotes all combinations of elements in $s_{pup}$ and $s_{dup}$ where
+
+For a user $u$ who wants to start a bike trip at time $t$, $s_{pu}$ and $s_{du}$ represent his or her intended pick-up and drop-off stations, respectively. In the meantime, the candidate pick-up and drop-off stations, denoted by $s_{puc} = \{s_{puc}^1, s_{puc}^2, ..., s_{puc}^i\}$ and $s_{duc} = \{s_{duc}^1, s_{duc}^2, ..., s_{duc}^j\}$, lie within a radius of $r_u$ from $s_{pu}$ and $s_{du}$, respectively. Since $u$ is only willing to walk a maximum additional distance $r_u$, the total distance between the intended stations and the candidate stations must be no more than $r_u$. Thus, the set $\{\{s_{puc}^k,s_{duc}^l\}, ...\}$ denotes all combinations of elements in $s_{puc}$ and $s_{duc}$ where
 \begin{equation}
-dist(s_{puc}^i, s_{pu}) + dist(s_{duc}^j, s_{du}) \leq r_u
+dist(s_{puc}^k, s_{pu}) + dist(s_{duc}^l, s_{du}) \leq r_u
 \end{equation}
 %\begin{equation}
 %d_{pu} = dist(s_{pu}, s)
@@ -114,10 +113,11 @@ dist(s_{puc}^i, s_{pu}) + dist(s_{duc}^j, s_{du}) \leq r_u
 %\begin{equation}
 %d_{du} = dist(s_{du}, s)
 %\end{equation}
-Next, the pair of stations in $cand$ with the smallest total congestion (namely, the sum of pick-up and drop-off congestion) are selected as alternative stations where $u$ is incentivized to choose, and they are denoted by $s_{pu}^*$ and $s_{pd}^*$, respectively. To model the incentives scheme, assume that for a given time interval, the network has a total budget of $B$ and there are $n$ active users in the network.
+
+Next, the pair of stations in $\{\{s_{puc}^k,s_{duc}^l\}, ...\}$ with the smallest total congestion (smallest $G_{spu}+G_{sdu}$) are selected as alternative stations, denoted by $s_{pu}^*$ and $s_{du}^*$, respectively. To incentivize $u$ to use the alternative stations, a payment is calculated using the objective function given in Section 4.4.
 
 \subsection{Constraints}
-With the current problem formulation, the variable is payment $p_u$ provided to user $u$ as an incentive. $p_u$ is constrained by the total budget ($B$) and the number of active users in the network ($n$).
+The proposed payment $p_u$ to user $u$ is used as an incentive to change $u$'s behavior. However, due to budget constraints, $p_u$ must be less than the total budget $B$ divided by the number of active users $n$ in the network.
 \begin{equation}
 0 \leq p_u \leq B/n
 \end{equation}
