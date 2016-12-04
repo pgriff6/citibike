@@ -35,12 +35,12 @@ disp('Adding maximum capacity information');
 max_default = 0; % Max # of bikes to assign to stations that we don't know max # of bikes for
 if flag == 1
     network_data{1,5} = 'Maximum # Bikes';
-    [~,Locb] = ismember(network_data(:,2),list(:,2));
+    [~,Locb] = ismember(network_data(2:end,2),list(:,2));
     capacity = str2num(char(list(Locb(:,1),3)));
     station_count = length(find(capacity == -1)) + length(find(capacity == -2));
     capacity(capacity == -1,1) = max_default;
     capacity(capacity == -2,1) = max_default;
-    network_data(:,5) = mat2cell(capacity,ones(1,length(capacity)));
+    network_data(2:end,5) = mat2cell(capacity,ones(1,length(capacity)));
 elseif flag == 2
     [~,Locb] = ismember(network_data(init+1:end,2),list(:,2));
     capacity = str2num(char(list(Locb(:,1),3)));
