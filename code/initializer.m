@@ -1,4 +1,4 @@
-function [network_data,bike_ids,counter,waittotal,queue] = initializer(data,list,idx1,network_data,flag,bike_ids,counter,total,queue)
+function [network_data,bike_ids,counter,waittotal,queue,station_count] = initializer(data,list,idx1,network_data,flag,bike_ids,counter,total,queue,station_count)
 
 % Create list of station ids, names, and locations
 if flag == 2
@@ -35,13 +35,19 @@ disp('Adding maximum capacity information');
 max_default = 0; % Max # of bikes to assign to stations that we don't know max # of bikes for
 if flag == 1
     network_data{1,5} = 'Maximum # Bikes';
-elseif flag == 2
     [~,Locb] = ismember(network_data(:,2),list(:,2));
     capacity = str2num(char(list(Locb(:,1),3)));
     station_count = length(find(capacity == -1)) + length(find(capacity == -2));
     capacity(capacity == -1,1) = max_default;
     capacity(capacity == -2,1) = max_default;
     network_data(:,5) = mat2cell(capacity,ones(1,length(capacity)));
+elseif flag == 2
+    [~,Locb] = ismember(network_data(init+1:end,2),list(:,2));
+    capacity = str2num(char(list(Locb(:,1),3)));
+    station_count = station_count + length(find(capacity == -1)) + length(find(capacity == -2));
+    capacity(capacity == -1,1) = max_default;
+    capacity(capacity == -2,1) = max_default;
+    network_data(init+1:end,5) = mat2cell(capacity,ones(1,length(capacity)));
     disp(['Assigned ' num2str(max_default) ' as default maximum capacity for ' num2str(station_count) ' of ' num2str(length(network_data(:,1))-1) ' stations']);
 end
 
