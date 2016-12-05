@@ -196,6 +196,9 @@ for k = idx1:idx2
         Gp = idxcombo(new_idx,3);
         Gd = idxcombo(new_idx,4);
         du = idxcombo(new_idx,5);
+    else
+        new_idxs = idxs;
+        new_idxe = idxe;
     end
     % If the best option is what the user intended to do, don't offer a payment; otherwise, run convex optimization to compute the payment
     if (idxs(1,1) == new_idxs) && (idxe(1,1) == new_idxe)
