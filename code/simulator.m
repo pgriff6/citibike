@@ -11,19 +11,31 @@ if incentives == 1
         mkdir('incentives');
     else
         rmdir('incentives','s');
+        mkdir('incentives');
     end
 else
     if exist('no_incentives','dir') == 0
         mkdir('no_incentives');
     else
         rmdir('no_incentives','s');
+        mkdir('no_incentives');
+    end
+end
+
+% Assign 10 as the maximum capacity for stations that still have 0 as the maximum capacity
+for bad_data = 1:length(network_data(:,1))
+    if network_data{bad_data,5} == 0
+        network_data{bad_data,5} = 10;
     end
 end
 
 % Use data from csv files to step through each bike trip, simulating users in the Citibike system
 % h = waitbar(0,'Simulating: 0%');
 % waittotal = idx2 - idx1 + 1;
+time = datetime([],[],[],[],[],[]);
 overall_PSQ = 0;
+average_PSQ = [];
+system_congestion = [];
 for k = idx1:idx2
     % Determine current time for present docking of bikes from queue
     datetime2 = conv_datetime(data{k,2});
@@ -31,7 +43,7 @@ for k = idx1:idx2
     while (isempty(queue) == 0) && (str2double(queue{1,1}) <= str2double(datetime2))
         network_data{queue{1,2},6} = network_data{queue{1,2},6} + 1; % Increment current # bikes by 1
         if network_data{queue{1,2},6} > network_data{queue{1,2},5}
-            error('Bike station has overflowed capacity');
+            warning('Bike station has overflowed capacity');
         end
         queue(1,:) = []; % Delete entry in queue
     end
@@ -79,6 +91,9 @@ for k = idx1:idx2
     % Consider nearby stations within radius number of miles based on age Au
     if incentives == 1
         Au = str2double(datetime2(1:4)) - str2double(data{k,14});
+        if strcmp(data{k,14},'') % If there is no age data, assume the user is 18
+            Au = 18;
+        end
         if Au <= 18
             radius = 1;
         elseif Au >= 60
@@ -188,19 +203,20 @@ for k = idx1:idx2
     else
         [payment,PSQ] = solve_cvx(w1,w2,w3,B,N,Au,du,Gp,Gd); % Calculate payment using convex optimization
         % Probability model for whether or not person accepts payment option
-        if rand > payment/(B/N) % If he/she does not accept the payment option
-            if (Gp == 1) || (Gd == 1)
-                % Person must take incentive if congestion at start or end station is maxed out
-            else
-                new_idxs = idxs(1,1);
-                new_idxe = idxe(1,1);
-            end
-        end
+% Uncomment to do probability model - for now the user always accepts the incentive/payment
+%         if rand > payment/(B/N) % If he/she does not accept the payment option
+%             if (idxcombo(1,3) == 1) || (idxcombo(1,4) == 1)
+%                 % Person must take incentive if congestion at start or end station is maxed out
+%             else
+%                 new_idxs = idxs(1,1);
+%                 new_idxe = idxe(1,1);
+%             end
+%         end
     end
     % Update the state of the Citibike system accordingly
     network_data{new_idxs,6} = network_data{new_idxs,6} - 1; % Decrement current # bikes by 1
     if network_data{new_idxs,6} < 0
-        error('Bike station has a negative number of bikes');
+        warning('Bike station has a negative number of bikes');
     end
     % Add endtime to queue for future docking of bike
     queue{end+1,1} = datetime1;
@@ -209,15 +225,16 @@ for k = idx1:idx2
     queue(:,:) = queue(ii,:);
     clear start_list end_list idxs idxe Cp Vp Cd Vd idxcombo
     % Network visualization
-    overall_PSQ = overall_PSQ + PSQ;
+    time(end+1,1) = datetime(str2double(datetime2(1:4)),str2double(datetime2(5:6)),str2double(datetime2(7:8)),str2double(datetime2(9:10)),str2double(datetime2(11:12)),str2double(datetime2(13:14)));
+    overall_PSQ(end+1,1) = overall_PSQ(end,1) + PSQ;
+    average_PSQ(end+1,1) = overall_PSQ(end,1)/(k-idx1+1);
+    system_congestion(end+1,1) = sum(abs((0.5*cell2mat(network_data(:,5)))-cell2mat(network_data(:,6)))./cell2mat(network_data(:,5)))/length(network_data(:,1));
     if (mod(k-idx1+1,50) == 0) || (k == idx1)
-        scatter(str2num(char(network_data(:,4))),str2num(char(network_data(:,3))),10+(2*cell2mat(network_data(:,6))),'filled','k');
+        scatter(str2num(char(network_data(:,4))),str2num(char(network_data(:,3))),10+(150*abs((0.5*cell2mat(network_data(:,5)))-cell2mat(network_data(:,6)))./cell2mat(network_data(:,5))),'filled','k');
 %         scatter(str2num(char(network_data([1:end-11 end-9:end],4))),str2num(char(network_data([1:end-11 end-9:end],3))),10+(2*cell2mat(network_data([1:end-11 end-9:end],6))),'filled','k');
         xlabel('Longitude');
         ylabel('Latitude');
         title(data{k,2});
-        text(-73.95,40.795,'Average Du:','FontSize',16);
-        text(-73.95,40.785,num2str(overall_PSQ/(k-idx1+1)),'FontSize',16);
         if incentives == 1
             print(['incentives/' num2str(k-idx1+1)],'-dpng');
         else
@@ -228,5 +245,30 @@ for k = idx1:idx2
     end
 end
 % close(h);
+overall_PSQ(1,:) = []; % Delete row of dummy data
+
+% Plot PSQ and overall congestion as a function of time
+figure();
+plot(time,average_PSQ);
+xlabel('Time');
+ylabel('Average PSQ');
+if incentives == 1
+    saveas(gcf,'incentives/average_PSQ.png');
+    saveas(gcf,'incentives/average_PSQ.fig');
+else
+    saveas(gcf,'no_incentives/average_PSQ.png');
+    saveas(gcf,'no_incentives/average_PSQ.fig');
+end
+figure();
+plot(time,system_congestion);
+xlabel('Time');
+ylabel('Overall System Congestion');
+if incentives == 1
+    saveas(gcf,'incentives/system_congestion.png');
+    saveas(gcf,'incentives/system_congestion.fig');
+else
+    saveas(gcf,'no_incentives/system_congestion.png');
+    saveas(gcf,'no_incentives/system_congestion.fig');
+end
 
 end
