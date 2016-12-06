@@ -278,6 +278,7 @@ for k = idx1:idx2
                 dp = lldistkm([str2double(network_data{old_idxs,3}) str2double(network_data{old_idxs,4})],[str2double(network_data{idxs,3}) str2double(network_data{idxs,4})]);
                 dp = distdim(dp,'km','miles'); % dp is pick-up station distance
             else
+                old_idxs = idxs;
                 Cp = network_data{idxs,5}; % Pick-up station's capacity
                 Vp = network_data{idxs,6}; % Pick-up station's current number of bikes
                 Gp = (Cp-Vp)/Cp; % Gp = (Cp-Vp)/Cp is pick-up station congestion level
@@ -313,6 +314,7 @@ for k = idx1:idx2
                 dd = lldistkm([str2double(network_data{old_idxe,3}) str2double(network_data{old_idxe,4})],[str2double(network_data{idxe,3}) str2double(network_data{idxe,4})]);
                 dd = distdim(dd,'km','miles'); % dd is drop-off station distance
             else
+                old_idxe = idxe;
                 Cd = network_data{idxe,5}; % Drop-off station's capacity
                 Vd = network_data{idxe,6}; % Drop-off station's current number of bikes
                 % Figure out how each Vd will look in the future once the bike trip ends (predictive model)
