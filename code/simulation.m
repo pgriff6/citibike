@@ -2,9 +2,11 @@ close all
 clear
 clc
 
-% FIX ISSUE OF BIKES LEAVING THE SYSTEM DURING INITIALIZER!!!
-% Speed up simulation by changing date scheme in initializer and simulator for whole vector rather than 1 by 1
-% Undo str2double() conversion in nearby_stations b/c it gets converted back in simulator
+% RADIUS PERSON IS WILLING TO WALK SHOULD TAKE INTO ACCOUNT EXPECTED BIKE TRIP DISTANCE
+% FIX ISSUE OF ASSUMING BIKE PICK-UP IS INSTANTANEOUS IF THE BIKER HAS TO WALK TO ANOTHER STATION (AFFECTS PREDICTIVE MODEL FOR BOTH Vp AND Vd)
+% FIX ISSUE OF BIKES LEAVING THE SYSTEM DURING INITIALIZER
+% NEED BETTER PROBABILITY MODEL OF BIKERS ACCEPTING OR REJECTING PAYMENTS
+% COULD ADD/IMPROVE BY GIVING BIKER MULTIPLE PAYMENT OPTIONS RATHER THAN ONLY ONE
 
 % Select bike trip data file for initialization
 disp('Select bike trip data file to use for initialization');

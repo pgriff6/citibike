@@ -4,8 +4,8 @@ function simulator(data,network_data,idx1,idx2,queue,incentives)
 B = 1000; % budget during time interval t
 t = 10; % time interval, in minutes
 w1 = 1; % weight 1 in objective function
-w2 = 1; % weight 2 in objective function
-w3 = 1; % weight 3 in objective function
+w2 = 10; % weight 2 in objective function
+w3 = 10; % weight 3 in objective function
 if incentives == 1
     if exist('incentives','dir') == 0
         mkdir('incentives');
@@ -89,11 +89,11 @@ for k = idx1:idx2
         end
     end
     % Consider nearby stations within radius number of miles based on age Au
+    Au = str2double(datetime2(1:4)) - str2double(data{k,14});
+    if strcmp(data{k,14},'') % If there is no age data, assume the user is 18
+        Au = 18;
+    end
     if incentives == 1
-        Au = str2double(datetime2(1:4)) - str2double(data{k,14});
-        if strcmp(data{k,14},'') % If there is no age data, assume the user is 18
-            Au = 18;
-        end
         if Au <= 18
             radius = 1;
         elseif Au >= 60
@@ -113,13 +113,13 @@ for k = idx1:idx2
     if incentives == 1
         [start_list,end_list] = nearby_stations(network_data,idxs,idxe,radius);
     else
-        start_list = [];
-        end_list = [];
+        start_list = {};
+        end_list = {};
     end
     % Determine capacity and current number of bikes for start stations
     if isempty(start_list) == 0
         for j = 1:length(start_list(:,1))
-            [~,idxs(end+1,1)] = ismember(num2str(start_list(j,1)),network_data(:,1));
+            [~,idxs(end+1,1)] = ismember(start_list{j,1},network_data(:,1));
         end
     end
     Cp = [];
@@ -131,7 +131,7 @@ for k = idx1:idx2
     % Determine capacity and current number of bikes for end stations
     if isempty(end_list) == 0
         for i = 1:length(end_list(:,1))
-            [~,idxe(end+1,1)] = ismember(num2str(end_list(i,1)),network_data(:,1));
+            [~,idxe(end+1,1)] = ismember(end_list{i,1},network_data(:,1));
         end
     end
     Cd = [];
@@ -145,9 +145,9 @@ for k = idx1:idx2
     for v = 1:length(Vd(:,1))
         % Determine bikes currently traveling that will arrive at station before endtime
         for z = 1:length(queue(:,1))
-            if str2double(queue{z,1}) > str2double(datetime1)
-                break
-            end
+%             if str2double(queue{z,1}) > str2double(datetime1)
+%                 break
+%             end
             if queue{z,2} == idxe(v,1)
                 Vd(v,1) = Vd(v,1) + 1;
             end
@@ -180,41 +180,189 @@ for k = idx1:idx2
                 if du <= radius
                     Gp = (Cp(id1,1)-Vp(id1,1))/Cp(id1,1); % Gp = (Cp-Vp)/Cp is pick-up station congestion level
                     Gd = Vd(id2,1)/Cd(id2,1); % Gd = Vd/Cd is drop-off station congestion level
-                    idxcombo(end+1,:) = [idxs(id1,1) idxe(id2,1) Gp Gd du];
+                    if (Gp ~= 1) && (Gd ~= 1) % Don't consider stations with maximum congestion
+                        idxcombo(end+1,:) = [idxs(id1,1) idxe(id2,1) Gp Gd du];
+                    end
                 end
             end
         end
     else
         Gp = (Cp-Vp)/Cp; % Gp = (Cp-Vp)/Cp is pick-up station congestion level
         Gd = Vd/Cd; % Gd = Vd/Cd is drop-off station congestion level
+        dp = 0; % dp is pick-up station distance
+        dd = 0; % dd is drop-off station distance
+        % Use closest alternative pick-up station if desired pick-up station is fully congested
+        if Gp >= 1
+            [start_list,~] = nearby_stations(network_data,idxs,idxe,1);
+            if isempty(start_list) == 0
+                old_idxs = idxs;
+                old_Gp = Gp;
+                for j = 1:length(start_list(:,1))
+                    [~,idxs] = ismember(start_list{j,1},network_data(:,1));
+                    Cp = network_data{idxs,5}; % Pick-up station's capacity
+                    Vp = network_data{idxs,6}; % Pick-up station's current number of bikes
+                    Gp = (Cp-Vp)/Cp; % Gp = (Cp-Vp)/Cp is pick-up station congestion level
+                    if Gp < 1
+                        break
+                    end
+                end
+                if Gp >= 1
+                    idxs = old_idxs;
+                    Gp = old_Gp;
+                end
+                dp = lldistkm([str2double(network_data{old_idxs,3}) str2double(network_data{old_idxs,4})],[str2double(network_data{idxs,3}) str2double(network_data{idxs,4})]);
+                dp = distdim(dp,'km','miles'); % dp is pick-up station distance
+            end
+        end
+        % Use closest alternative drop-off station if desired drop-off station is fully congested
+        if Gd >= 1
+            if exist('old_idxs','var')
+                [~,end_list] = nearby_stations(network_data,old_idxs,idxe,1);
+            else
+                [~,end_list] = nearby_stations(network_data,idxs,idxe,1);
+            end
+            if isempty(end_list) == 0
+                old_idxe = idxe;
+                old_Gd = Gd;
+                for i = 1:length(end_list(:,1))
+                    [~,idxe] = ismember(end_list{i,1},network_data(:,1));
+                    Cd = network_data{idxe,5}; % Drop-off station's capacity
+                    Vd = network_data{idxe,6}; % Drop-off station's current number of bikes
+                    % Figure out how each Vd will look in the future once the bike trip ends (predictive model)
+                    % Determine bikes currently traveling that will arrive at station before endtime
+                    for z = 1:length(queue(:,1))
+%                         if str2double(queue{z,1}) > str2double(datetime1)
+%                             break
+%                         end
+                        if queue{z,2} == idxe
+                            Vd = Vd + 1;
+                        end
+                    end
+                    Gd = Vd/Cd; % Gd = Vd/Cd is drop-off station congestion level
+                    if Gd < 1
+                        break
+                    end
+                end
+                if Gd >= 1
+                    idxe = old_idxe;
+                    Gd = old_Gd;
+                end
+                dd = lldistkm([str2double(network_data{old_idxe,3}) str2double(network_data{old_idxe,4})],[str2double(network_data{idxe,3}) str2double(network_data{idxe,4})]);
+                dd = distdim(dd,'km','miles'); % dd is drop-off station distance
+            end
+        end
+        du = dp + dd; % du is total distance
     end
     % Determine pair of stations with minimum amount of congestion
     if incentives == 1
-        [~,new_idx] = min(idxcombo(:,3)+idxcombo(:,4));
-        new_idxs = idxcombo(new_idx,1);
-        new_idxe = idxcombo(new_idx,2);
-        Gp = idxcombo(new_idx,3);
-        Gd = idxcombo(new_idx,4);
-        du = idxcombo(new_idx,5);
+        if isempty(idxcombo)
+            clear start_list end_list
+            [start_list,end_list] = nearby_stations(network_data,idxs(1,1),idxe(1,1),1);
+            if isempty(start_list) == 0
+                old_idxs = idxs(1,1);
+                old_Gp = (Cp(1,1)-Vp(1,1))/Cp(1,1);
+                clear idxs Cp Vp
+                for j = 1:length(start_list(:,1))
+                    [~,idxs] = ismember(start_list{j,1},network_data(:,1));
+                    Cp = network_data{idxs,5}; % Pick-up station's capacity
+                    Vp = network_data{idxs,6}; % Pick-up station's current number of bikes
+                    Gp = (Cp-Vp)/Cp; % Gp = (Cp-Vp)/Cp is pick-up station congestion level
+                    if Gp < 1
+                        break
+                    end
+                end
+                if Gp >= 1
+                    idxs = old_idxs;
+                    Gp = old_Gp;
+                end
+                dp = lldistkm([str2double(network_data{old_idxs,3}) str2double(network_data{old_idxs,4})],[str2double(network_data{idxs,3}) str2double(network_data{idxs,4})]);
+                dp = distdim(dp,'km','miles'); % dp is pick-up station distance
+            else
+                Cp = network_data{idxs,5}; % Pick-up station's capacity
+                Vp = network_data{idxs,6}; % Pick-up station's current number of bikes
+                Gp = (Cp-Vp)/Cp; % Gp = (Cp-Vp)/Cp is pick-up station congestion level
+                dp = 0; % dp is pick-up station distance
+            end
+            if isempty(end_list) == 0
+                old_idxe = idxe(1,1);
+                old_Gd = Vd(1,1)/Cd(1,1);
+                clear idxe Cd Vd
+                for i = 1:length(end_list(:,1))
+                    [~,idxe] = ismember(end_list{i,1},network_data(:,1));
+                    Cd = network_data{idxe,5}; % Drop-off station's capacity
+                    Vd = network_data{idxe,6}; % Drop-off station's current number of bikes
+                    % Figure out how each Vd will look in the future once the bike trip ends (predictive model)
+                    % Determine bikes currently traveling that will arrive at station before endtime
+                    for z = 1:length(queue(:,1))
+%                         if str2double(queue{z,1}) > str2double(datetime1)
+%                             break
+%                         end
+                        if queue{z,2} == idxe
+                            Vd = Vd + 1;
+                        end
+                    end
+                    Gd = Vd/Cd; % Gd = Vd/Cd is drop-off station congestion level
+                    if Gd < 1
+                        break
+                    end
+                end
+                if Gd >= 1
+                    idxe = old_idxe;
+                    Gd = old_Gd;
+                end
+                dd = lldistkm([str2double(network_data{old_idxe,3}) str2double(network_data{old_idxe,4})],[str2double(network_data{idxe,3}) str2double(network_data{idxe,4})]);
+                dd = distdim(dd,'km','miles'); % dd is drop-off station distance
+            else
+                Cd = network_data{idxe,5}; % Drop-off station's capacity
+                Vd = network_data{idxe,6}; % Drop-off station's current number of bikes
+                % Figure out how each Vd will look in the future once the bike trip ends (predictive model)
+                % Determine bikes currently traveling that will arrive at station before endtime
+                for z = 1:length(queue(:,1))
+%                     if str2double(queue{z,1}) > str2double(datetime1)
+%                         break
+%                     end
+                    if queue{z,2} == idxe
+                        Vd = Vd + 1;
+                    end
+                end
+                Gd = Vd/Cd; % Gd = Vd/Cd is drop-off station congestion level
+                dd = 0; % dd is drop-off station distance
+            end
+            du = dp + dd; % du is total distance
+            idxs(2,1) = idxs;
+            idxe(2,1) = idxe;
+            idxs(1,1) = old_idxs;
+            idxe(1,1) = old_idxe;
+            new_idxs = idxs(2,1);
+            new_idxe = idxe(2,1);
+        else
+            [~,new_idx] = min(idxcombo(:,3)+idxcombo(:,4));
+            new_idxs = idxcombo(new_idx,1);
+            new_idxe = idxcombo(new_idx,2);
+            Gp = idxcombo(new_idx,3);
+            Gd = idxcombo(new_idx,4);
+            du = idxcombo(new_idx,5);
+        end
     else
         new_idxs = idxs;
         new_idxe = idxe;
     end
     % If the best option is what the user intended to do, don't offer a payment; otherwise, run convex optimization to compute the payment
     if (idxs(1,1) == new_idxs) && (idxe(1,1) == new_idxe)
-        PSQ = (w2*(Gp-1))+(w3*(Gd-1)); % Calculate poor service quality
+        PSQ = (w1*Au*du)+(w2*(Gp-1))+(w3*(Gd-1)); % Calculate poor service quality
     else
         [payment,PSQ] = solve_cvx(w1,w2,w3,B,N,Au,du,Gp,Gd); % Calculate payment using convex optimization
         % Probability model for whether or not person accepts payment option
-% Uncomment to do probability model - for now the user always accepts the incentive/payment
-%         if rand > payment/(B/N) % If he/she does not accept the payment option
-%             if (idxcombo(1,3) == 1) || (idxcombo(1,4) == 1)
-%                 % Person must take incentive if congestion at start or end station is maxed out
-%             else
-%                 new_idxs = idxs(1,1);
-%                 new_idxe = idxe(1,1);
-%             end
-%         end
+        if rand > payment/(B/N) % If he/she does not accept the payment option
+            if (isempty(idxcombo) == 0) && (idxcombo(1,1) == idxs(1,1)) && (idxcombo(1,2) == idxe(1,1)) % Person must take incentive if congestion at start or end station is maxed out
+                new_idxs = idxs(1,1);
+                new_idxe = idxe(1,1);
+                Gp = idxcombo(1,3);
+                Gd = idxcombo(1,4);
+                du = idxcombo(1,5);
+                PSQ = (w1*Au*du)+(w2*(Gp-1))+(w3*(Gd-1)); % Calculate poor service quality
+            end
+        end
     end
     % Update the state of the Citibike system accordingly
     network_data{new_idxs,6} = network_data{new_idxs,6} - 1; % Decrement current # bikes by 1
@@ -256,10 +404,10 @@ plot(time,average_PSQ);
 xlabel('Time');
 ylabel('Average PSQ');
 if incentives == 1
-    saveas(gcf,'incentives/average_PSQ.png');
+%     saveas(gcf,'incentives/average_PSQ.png');
     saveas(gcf,'incentives/average_PSQ.fig');
 else
-    saveas(gcf,'no_incentives/average_PSQ.png');
+%     saveas(gcf,'no_incentives/average_PSQ.png');
     saveas(gcf,'no_incentives/average_PSQ.fig');
 end
 figure();
@@ -267,11 +415,13 @@ plot(time,system_congestion);
 xlabel('Time');
 ylabel('Overall System Congestion');
 if incentives == 1
-    saveas(gcf,'incentives/system_congestion.png');
+%     saveas(gcf,'incentives/system_congestion.png');
     saveas(gcf,'incentives/system_congestion.fig');
+    save('incentives/variables.mat');
 else
-    saveas(gcf,'no_incentives/system_congestion.png');
+%     saveas(gcf,'no_incentives/system_congestion.png');
     saveas(gcf,'no_incentives/system_congestion.fig');
+    save('no_incentives/variables.mat');
 end
 
 end
