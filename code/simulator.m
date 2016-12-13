@@ -1,7 +1,7 @@
 function simulator(data,network_data,idx1,idx2,queue,incentives)
 
 % Constant definitions and directory creation for visualization files
-B = 1000; % budget during time interval t
+B = 100; % budget during time interval t
 t = 10; % time interval, in minutes
 w1 = 1; % weight 1 in objective function
 w2 = 10; % weight 2 in objective function
