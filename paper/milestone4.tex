@@ -47,7 +47,7 @@ The issue of congestion in bicycle sharing systems is prevalent in many cities. 
 
 The Citi Bike system, located in New York City, is one of many bicycle sharing systems that exist in the world. Since users unlock a bike at one station and drop it off at another station, bikes tend to follow unidirectional flows at various times of the day. As a result, some stations have few to no bikes at them while others are completely full.
 
-This unidirectional flow of bikes frustrates users who would like to pick up a bike from an empty station or drop off a bike at a full station. As a result, this project seeks to address the issue of system congestion through a pricing scheme based on the optimization of network structure and dynamics. In addition, alteration of the network topology to reduce congestion will be explored through optimal placement of nodes (stations). Looking at the problem from a network perspective is a unique approach that has not been considered with previous work. In the end, this project seeks to analyze the Citi Bike network and minimize poor service quality by modifying its structure through changing people's incentives.
+This unidirectional flow of bikes frustrates users who would like to pick up a bike from an empty station or drop off a bike at a full station. As a result, this project seeks to address the issue of system congestion through a pricing scheme based on the optimization of network structure and dynamics. Looking at the problem from a network perspective is a unique approach that has not been considered with previous work. In the end, this project seeks to analyze the Citi Bike network and minimize poor service quality by modifying its structure through changing people's incentives.
 
 %------------------------------------------------------------------------- 
 \section{Previous Work}
@@ -62,13 +62,17 @@ The Citi Bike network is built using available data from Citi Bike's website \ci
 The trip data in \cite{dataset} does not include explicit information about the addition or removal of bikes to the system or the transfer of bikes by truck from one station to another. Consequently, this project can only analyze bike trips from one station to another. In addition, there is no information about the number of bikes at particular stations at specific points in time. As a result, an initialization procedure is used to infer this information.
 
 \subsection{Initialization Procedure}
-The objective of the initialization procedure is to determine an initial state of the Citi Bike system at any point in time. The procedure starts by identifying a start time and assuming that no bikes are initially in the system. Over a specified time period, bikes are added to the system using incoming trip data for each station and are tracked by their identification numbers to determine which stations they are at. At the end of this period, it is assumed that all bikes have been added to the system, and each station is assigned with an initial number of bikes. Future trip data can now be used to determine the number of bikes at particular stations at any time after the initialization procedure.
+The objective of the initialization procedure is to determine an initial state of the Citi Bike system at any point in time. The procedure begins by identifying a start time and assuming that no bikes are initially in the system. Over a specified time period, bikes are added to the system using incoming trip data for each station and are tracked by their identification numbers to determine which stations they are at. At the end of this period, it is assumed that all bikes have been added to the system, and each station is assigned with an initial number of bikes. Future trip data can now be used to determine the number of bikes at particular stations at any time after the initialization procedure.
 
-Lastly, congestion in the Citi Bike network is defined in two ways. First, a bike station with few no bikes is congested for a user who wants to pick up a bike. Second, a bike station with few or no open docks is congested for a user who wants to drop off a bike. In either case, the user experiences a Poor Service Quality (PSQ). To decongest the network by providing accurate monetary incentives to the users, we formulate a convex optimization problem that seeks to minimize PSQ.
+\subsection{Convex Optimization Overview}
 
-\subsection{Sub-Functions and Parameters}
+A convex optimization problem, used to compute monetary incentives for users, is formulated such that poor service quality is minimized subject to budget constraints. This convex optimization problem computes the payment for a user after a pair of alternative stations for the user has already been determined. As a result, the convex optimization problem is solved locally on a trip-by-trip basis rather than globally to assign a set of payments to a set of users. The reason the first approach is taken is because it can be implemented in real life. The other approach is unrealistic because it assumes all bike trips within a specified time period occur instantaneously. Since this approach cannot be implemented in real life, we first compute a pair of alternative stations and then use convex optimization to map an appropriate payment to that pair of alternative stations. Consequently, this approach decongests the Citi Bike network from a local perspective. A few functions and parameters on which the convex optimization problem depends are defined in the next section.
 
-The convex optimization problem is formulated within a time interval $t$. $u = \{u_1, u_2, ..., u_n\}$ represents the set of $n$ users in the Citi Bike network, $A_u$ represents the age of user $u$, and $r_u$ represents the maximum distance user $u$ is willing to walk. The authors in \cite{incentives} conducted a survey on users of a real-world Bike Sharing System in an European city to introduce their incentives scheme and elicit user preferences about additional distance they are willing walk. While roughly 20\% of the responses were "unwilling to walk" or "unwilling to participate at any cost," most of the other participants were only willing to walk less than or equal to one mile. Additionally, the results of the survey suggest that the relation between the cumulative distribution of willingness to walk and the maximum walking distance is a decaying exponential (namely, more people are willing to walk a shorter additional distance than a longer one). We also speculate that there is a direct correlation between a user's age and his or her willingness to walk an additional distance. In other words, when given the same incentives, the additional distance an elderly person is willing to walk is less than that of a young person. In light of this, we model $r_u$ as a decaying exponential function of $A_u$ ranging from $r_u(min) = 0.1$ to $r_u(max) = 1$, where the units of $r_u$ are miles. If a user is more than 60 years old, he or she is automatically assigned with $r_u(min)$. Similarly, a user younger than 18 years old is assigned with $r_u(max)$. In summary, $r_u$ is expressed as
+\subsection{Function and Parameter Definitions}
+
+We consulted \cite{incentives} in order to accurately define a function that models the maximum distance a user is willing to walk to a pair of alternative stations. The authors in \cite{incentives} conducted a survey of users for a real-world bike sharing system in a European city to elicit user preferences about additional distances they are willing walk. While roughly 20\% of the responses were "unwilling to walk" or "unwilling to participate at any cost," most of the other participants were only willing to walk less than or equal to one mile. Additionally, the results of the survey suggest that the relationship between the cumulative distribution of willingness to walk and the maximum walking distance is a decaying exponential (namely, more people are willing to walk a shorter additional distance than a longer one).
+
+We speculate that there is a direct correlation between a user's age and his or her willingness to walk an additional distance. In other words, when given the same incentives, the additional distance an elderly person is willing to walk is less than that of a young person. As a result, we define a function that computes the maximum distance a user is willing to walk as a function of the user's age. In this function, $u = \{u_1, u_2, ..., u_n\}$ represents the set of $n$ users in the Citi Bike network during time interval $t$, $A_u$ represents the age of user $u$, and $r_u$ represents the maximum distance user $u$ is willing to walk. $r_u$ is modeled as a decaying exponential function of $A_u$ ranging from $r_u^{min} = 0.1$ to $r_u^{max} = 1$, where the units of $r_u$ are miles. If a user is more than 60 years old, he or she is automatically assigned with $r_u^{min}$. Similarly, a user younger than 18 years old is assigned with $r_u^{max}$. In summary, $r_u$ is expressed as
 \begin{equation}
 %r_u = f(A_u)
 %r_u = 2.683e^{-0.055A_u}
@@ -81,7 +85,7 @@ r_u = \left\{
     \right.
 \end{equation}
 
-The distance (in miles) between a pair of stations is calculated using equation 2, which relies on equations 3-5 to compute its value. Here, $l_{lat1}$, $l_{lat2}$, $l_{lon1}$, and $l_{lon2}$ represent the latitudes and longitudes of the two stations.
+The distance (in miles) between a pair of stations $s_1$ and $s_2$ is calculated using the Haversine formula in Equation 2, which relies on equations 3-5 to compute its value. Here, $l_{lat1}$, $l_{lat2}$, $l_{lon1}$, and $l_{lon2}$ represent the latitudes and longitudes of the two stations, and the constant 7922 represents the diameter of the earth in miles.
 \begin{equation}
 dist(s_1,s_2) = 7922\arctan{\frac{\sqrt{a}}{\sqrt{1-a}}}
 \end{equation}
@@ -95,7 +99,7 @@ d_{lon} = l_{lon2} - l_{lon1}
 d_{lat} = l_{lat2} - l_{lat1}
 \end{equation}
 
-For a set of $m$ bike stations in the network, $s = \{s_1, s_2, ..., s_m\}$, each station is associated with a maximum capacity $C_s$ and two congestion levels at any given time. Assume that at time $t$, there at $v_s$ bikes stored at station $s$. $G_{spu}$ is the congestion of $s$ for a user who wants to pick up a bike, measuring the percentage of open docks at the station. Similarly, $G_{sdu}$ is the congestion of $s$ for a user who wants to drop off a bike, measuring the percentage of stored bikes at the station when the user arrives. Here, $v_{sf}$ represents the number of bikes that are added or subtracted from $v_s$ while the user travels to the drop-off station.
+The set of $m$ bike stations in the network is denoted by $s = \{s_1, s_2, ..., s_m\}$. Each station is associated with a maximum capacity $C_s$ and two congestion levels at any given time. $G_{spu}$ is the station's congestion for a user who wants to pick up a bike, measuring the percentage of open docks at the station. Similarly, $G_{sdu}$ is the station's congestion for a user who wants to drop off a bike, measuring the percentage of stored bikes at the station when the user arrives. As a result, both $G_{spu}$ and $G_{sdu}$ vary between 0 and 1, where 1 represents complete congestion and 0 represents no congestion. In the following equations, $v_s$ denotes the current number of bikes at the station, and $v_{sf}$ represents the number of bikes that are added or subtracted from $v_s$ while the user travels to the drop-off station.
 \begin{equation}
 G_{spu} = \frac{C_s-v_s}{C_s}
 \end{equation}
@@ -103,7 +107,7 @@ G_{spu} = \frac{C_s-v_s}{C_s}
 G_{sdu} = \frac{v_s+v_{sf}}{C_s}
 \end{equation}
 
-For a user $u$ who wants to start a bike trip at time $t$, $s_{pu}$ and $s_{du}$ represent his or her intended pick-up and drop-off stations, respectively. In the meantime, the candidate pick-up and drop-off stations, denoted by $s_{puc} = \{s_{puc}^1, s_{puc}^2, ..., s_{puc}^i\}$ and $s_{duc} = \{s_{duc}^1, s_{duc}^2, ..., s_{duc}^j\}$, lie within a radius of $r_u$ from $s_{pu}$ and $s_{du}$, respectively. Since $u$ is only willing to walk a maximum additional distance $r_u$, the total distance between the intended stations and the candidate stations must be no more than $r_u$. Thus, the set $\{\{s_{puc}^k,s_{duc}^l\}, ...\}$ denotes all combinations of elements in $s_{puc}$ and $s_{duc}$ where
+When a user wants to go on a bike trip, $s_{pu}$ and $s_{du}$ represent his or her intended pick-up and drop-off stations, respectively. The following process is used to compute a pair of alternative stations for the user. First, only pick-up and drop-off stations that lie within a radius $r_u$ from $s_{pu}$ and $s_{du}$, respectively, are considered. These candidate pick-up and drop-off stations are denoted by $s_{puc} = \{s_{puc}^1, s_{puc}^2, ..., s_{puc}^i\}$ and $s_{duc} = \{s_{duc}^1, s_{duc}^2, ..., s_{duc}^j\}$, respectively. Second, the total distance between the intended stations and the candidate stations must be no more than $r_u$ since the user is only willing to walk a maximum additional distance $r_u$. Thus, the set of pairs $\{\{s_{puc}^k,s_{duc}^l\}, ...\}$ denotes all combinations of element pairs between $s_{puc}$ and $s_{duc}$ where
 \begin{equation}
 d_u = dist(s_{puc}^k, s_{pu}) + dist(s_{duc}^l, s_{du}) \leq r_u
 \end{equation}
@@ -114,11 +118,10 @@ Here, $d_u$ represents the total distance the user would have to walk to use the
 %\begin{equation}
 %d_{du} = dist(s_{du}, s)
 %\end{equation}
-
-Next, the pair of stations in $\{\{s_{puc}^k,s_{duc}^l\}, ...\}$ with the smallest total congestion (smallest $G_{spu}+G_{sdu}$) are selected as alternative stations, denoted by $s_{pu}^*$ and $s_{du}^*$, respectively. To incentivize $u$ to use the alternative stations, a payment is calculated using the objective function given in Section 4.4.
+Lastly, the pair of stations in $\{\{s_{puc}^k,s_{duc}^l\}, ...\}$ with the smallest total congestion (smallest $G_{spu}+G_{sdu}$) is selected as the user's pair of alternative stations.
 
 \subsection{Constraints}
-The proposed payment $p_u$ to user $u$ is used as an incentive to change $u$'s behavior. However, due to budget constraints, $p_u$ must be less than the total budget $B$ divided by the number of active users $n$ in the network.
+A payment $p_u$ is given to the user if he or she decides to use the pair of alternative stations. However, this payment is subject to a few constraints given in Equation 9, including the fact that $p_u$ cannot be negative. Due to budget constraints, $p_u$ must also be less than the maximum allowable payment. This maximum payment is equal to the total spending budget $B$ for time interval $t$ divided by the number of active users $n$ in the network during time interval $t$.
 \begin{equation}
 0 \leq p_u \leq B/n
 \end{equation}
@@ -158,30 +161,32 @@ The proposed payment $p_u$ to user $u$ is used as an incentive to change $u$'s b
 
 \subsection{Objective Function}
  
-The objective of the optimization problem is to output a payment $p_u$ such that Poor Service Quality ($PSQ$) is minimized. From the perspective of user $u$ traveling from station $s_{pu}$ (with maximum capacity $C_{spu}$) to station $s_{du}$ (with maximum capacity $C_{sdu}$), $PSQ$ is affected by three factors: the additional distance $u$ has to walk ($d_u$), the congestion of the intended pick-up station ($G_{spu}$), and the congestion of the intended drop-off station ($G_{sdu}$). Correspondingly, we propose three functions to model the effect of $p_u$ on each of these factors.
+The objective of the convex optimization problem is to output a payment $p_u$ such that Poor Service Quality ($PSQ$) is minimized. From the perspective of user $u$ traveling from station $s_{pu}$ to station $s_{du}$, $PSQ$ is affected by three factors: the additional distance $u$ has to walk ($d_u$), the congestion of the intended pick-up station ($G_{spu}$), and the congestion of the intended drop-off station ($G_{sdu}$). Correspondingly, we propose three functions to model the effect of $p_u$ on each of these factors:
 \begin{equation}
 d(p_u) = \sqrt{\frac{n}{B}p_u}
 \end{equation}
 \begin{equation}
-G_{pu}(p_u) = C_{spu}\sqrt{1-\frac{n}{B}p_u}
+G_{pu}(p_u) = \sqrt{1-\frac{n}{B}p_u}
 \end{equation}
 \begin{equation}
-G_{du}(p_u) = C_{sdu}\sqrt{1-\frac{n}{B}p_u}
+G_{du}(p_u) = \sqrt{1-\frac{n}{B}p_u}
 \end{equation}
-Poor Service Quality ($PSQ$), the term to minimize, is defined as
+These three equations are all modeled as concave square root functions in order to achieve convexity in the term being minimized ($PSQ$) as defined in Equation 13. The function in Equation 10 is modeled such that a greater incentive ($p_u$) is offered if $u$ is willing to walk a longer distance ($d(p_u)$). The equation is also designed so that no payment ($p_u = 0$) corresponds to $u$ walking no additional distance ($d(p_u) = 0$ miles), and so that the maximum payment ($p_u = B/n$) corresponds to $u$ walking the maximum allowable distance ($d(p_u) = 1$ mile).
+
+Poor Service Quality ($PSQ$), the term to minimize, is defined so that $p_u$ offsets the three factors ($d_u$, $G_{spu}$, and $G_{sdu}$) that increase $PSQ$:
 \begin{equation}
 \begin{split}
 PSQ = w_1A_u(d_u - d(p_u)) + w_2(G_{spu} - G_{pu}(p_u)) \\ + w_3(G_{sdu} - G_{du}(p_u))
 \end{split}
 \end{equation}
-where $w_1$, $w_2$, and $w_3$ are weights that weigh how much the additional walking distance ($d_u$), the pick-up station congestion ($G_{spu}$), and the drop-off station congestion ($G_{sdu}$) increase the Poor Service Quality ($PSQ$). The user's age $A_u$ is used here to account for the correlation between age and willingness to walk an additional distance.
+Here, the user's age $A_u$ is used to account for the correlation between age and willingness to walk an additional distance. The weights $w_1$, $w_2$, and $w_3$ weigh how much the additional walking distance ($d_u$), the pick-up station congestion ($G_{spu}$), and the drop-off station congestion ($G_{sdu}$) increase the Poor Service Quality ($PSQ$). For the simulation described in Section 5.2, these weights are set so that congestion has a greater influence on $PSQ$ ($w_1 = 1$, $w_2 = 10$, and $w_3 = 10$).
 
 Figure 1 illustrates an example of these proposed functions for an 18-year-old user with arbitrary bike station data. Based on the definitions of pick-up and drop-off congestions, a concave square root function is used to formulate $G_{pu}(p_u)$ and $G_{du}(p_u)$ so that a greater incentive ($p_u$) is offered to $u$ if he or she picks up a bike from a station with low pick-up congestion (many current bikes) or drop off a bike at a station with low drop-off congestion (many open docks). These functions correspond to Figure 1(a) and Figure 1(b), respectively. In addition, a concave square root function is used to provide greater incentives ($p_u$) if $u$ is willing to walk a longer distance $d(p_u)$. This effect is illustrated in Figure 1(c).
 
 While the three aforementioned factors tend to increase $PSQ$, they are balanced by the three proposed functions of $p_u$. Since all three proposed functions are concave, the summation of the negative values of them guarantees the convexity of $PSQ$. This convexity is demonstrated in Figure 1(d).
 %$w_2$ and $w_3$ should be the same to reflect the equal importance of the pick-up and drop-off congestions, and $w_1$ should be significantly smaller than $w_2$ and $w_3$ since the main concern of the problem is system congestion.
 
-\centerline{\includegraphics[width=0.5\textwidth]{m2/cvx_example.png}}
+\centerline{\includegraphics[width=0.5\textwidth]{m4/cvx_example.png}}
 \centerline{Figure 1: Convex Optimization Example}
 \hfill \break
 
@@ -231,12 +236,12 @@ While the three aforementioned factors tend to increase $PSQ$, they are balanced
 \subsection{Network Analysis}
 Based on the network definition presented in Section 4, a sample dynamic network is constructed to represent bike usage from Thursday to Saturday in a normal week. First, Citi Bike data from the first three days of September 2016 is extracted from the original data set in \cite{dataset} to generate a node table with 583 nodes and an edge list with more than 130,000 edges. Second, the node table and edge list are imported to Gephi as a dynamic network. The Gephi plugin \textit{Geo Layout} is used to arrange the nodes according to their geographic locations, while network properties are dynamically changed by filtering out edges outside a particular time window. In this analysis, the time window for edge filtering is set to one hour.\\
 
-\centerline{\includegraphics[width=0.5\textwidth]{m2/combined.jpg}}
+\centerline{\includegraphics[width=0.5\textwidth]{m4/combined.jpg}}
 \centerline{Figure 2: Citi Bike Network on September 1, 2016}
 \hfill \break
 \indent Figure 2 shows the network at four different time intervals on September 1, 2016. From left to right, the figures represent the network between 1\textsc{am} and 2\textsc{am}, 7\textsc{am} and 8\textsc{am}, 1\textsc{pm} and 2\textsc{pm}, and 7\textsc{pm} and 8\textsc{pm}. Figure 3 illustrates how some of the network properties change over time. Every day, the maximum average node degree is observed between 4\textsc{pm} and 7\textsc{pm}, corresponding to the evening rush hour. On the two weekdays, there is also a secondary peak between 7\textsc{am} and 8\textsc{am}, reflecting the morning rush hour. As expected, this secondary peak is not present on September 3 since it is a Saturday. On the contrary, the network's average path length stays relatively consistent during the day and in the early evening. Bikers seem to take longer trips around midnight and in the morning (between 6\textsc{am} and 7\textsc{am}), while the trips between midnight and 6\textsc{am} tend to be much shorter.
 
-\centerline{\includegraphics[width=0.5\textwidth]{m2/plotterfigure.png}}
+\centerline{\includegraphics[width=0.5\textwidth]{m4/plotterfigure.png}}
 \centerline{Figure 3: Citi Bike Network Properties}
 \hfill \break
 \indent As for community structure, the network's modularity and formation of communities exhibit a periodic pattern. During the day, the network has high modularity and the nodes can be grouped into a few communities. At night, the network is less modular and only a handful of nodes can form communities with others. This observation is in line with fact that bike movement patterns tend to be unidirectional during the day (when bikers go to work) and disperse at night (when bikers go home in different directions).
@@ -247,14 +252,14 @@ This network setup has a few limitations. One limitation is that the congestion 
 
 In order to demonstrate whether or not the formulated optimization problem results in decongesting the Citi Bike network, a simulator is created using MATLAB. The simulator first uses an entire month's trip data plus data from the beginning of the next month to implement the initialization procedure and estimate how many bikes are at each station. Beginning with a specified date in the next month, trip data entries are stepped through for a time period specified by the user. Each entry has a start station and an end station corresponding to the biker's intended pick-up and drop-off stations ($s_{pu}$ and $s_{du}$).
 
-If the congestion level is high for one or both of these intended stations (too empty for pick-up or too crowded for drop-off), the user is provided with a pair of alternative pick-up and drop-off stations ($s_{puc}$ and $s_{duc}$). This pair is determined using equation (?) as explained in Section 4.3. The convex optimization problem then uses information about this alternative pair of stations to compute an associated payment for the user that minimizes PSQ subject to budget constraints. A probability model is then used to estimate whether or not the user accepts the payment and takes the alternative route.
+If the congestion level is high for one or both of these intended stations (too empty for pick-up or too crowded for drop-off), the user is provided with a pair of alternative pick-up and drop-off stations ($s_{puc}$ and $s_{duc}$). This pair is determined using Equation (?) as explained in Section 4.3. The convex optimization problem then uses information about this alternative pair of stations to compute an associated payment for the user that minimizes PSQ subject to budget constraints. A probability model is then used to estimate whether or not the user accepts the payment and takes the alternative route.
 
 \hfill \break
-\centerline{\includegraphics[width=0.25\textwidth]{m2/no_incentives_before.png}\includegraphics[width=0.25\textwidth]{m2/no_incentives_after.png}}
+\centerline{\includegraphics[width=0.25\textwidth]{m4/no_incentives_before.png}\includegraphics[width=0.25\textwidth]{m4/no_incentives_after.png}}
 \centerline{Figure 4: Citi Bike Network with No Incentives}
 \hfill \break
-\centerline{\includegraphics[width=0.25\textwidth]{m2/incentives_before.png}\includegraphics[width=0.25\textwidth]{m2/incentives_after.png}}
-\centerline{Figure 5: Citi Bike Network with Optimal Station Choices}
+\centerline{\includegraphics[width=0.25\textwidth]{m4/incentives_before.png}\includegraphics[width=0.25\textwidth]{m4/incentives_after.png}}
+\centerline{Figure 5: Citi Bike Network with Incentives}
 \hfill \break
 \indent After the user makes a decision about the incentive, the state of the Citi Bike system is updated with respect to the number of bikes at each station. Figure 4 shows the state of the Citi Bike system at 7\textsc{am} and 10\textsc{am} on March 3, 2016 with no monetary incentives. Figure 5 shows the state of the system at the same times when bikers always choose to take the incentives. In each figure, the dots represent the bike stations, and the size of a dot is proportional to how many bikes are currently at that station. As shown, the network stays relatively congested when bikers are not provided with any incentives, but the network quickly decongests itself when all bikers accept the monetary incentives. This result demonstrates that the properties of the network can be changed significantly if enough bikers accept the monetary incentives.
 
@@ -276,6 +281,8 @@ Although the simulator overcomes the limitations of the basic network setup desc
 This work proposes a network-based framework to decongest the Citi Bike system via convex optimization. After constructing the system as a dynamic network, the objective function, constraints, and other related sub-functions are defined for the convex optimization problem. In addition, a MATLAB simulator is used to modify the network's properties using monetary incentives. In this work, Paul Griffioen focused on developing the MATLAB simulator and Anthony Jin focused on formulating the convex optimization problem.
 
 Future work will focus on finalizing the probability model used to simulate the acceptance of monetary incentive. The simulator will be used to generate results using this probability model as opposed to one where bikers always accept the monetary incentives given to them. These results will be shown for different times during the year along with an exploration of how the monetary incentives acceptance rate influences system congestion.
+
+Future work: In addition, alteration of the network topology to reduce congestion will be explored through optimal placement of nodes (stations).
 
 %the percentage of bikers needed to accept monetary incentives and cause a significant decrease in system congestion will be determined.
 %The basic methodology to construct the Citi Bike network is proposed in this work. Because certain information is not available about the bike stations' capacity, an initialization procedure is also proposed to estimate the number of bikes in the system and at each station. As a preliminary analysis, a sample network is constructed using data between September 1, 2016 and September 3, 2016 to evaluate network properties at different time intervals. In this work, Paul Griffioen extracted network information from the original dataset using MATLAB and Anthony Jin analyzed the network using Gephi.
