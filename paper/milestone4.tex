@@ -269,9 +269,21 @@ Currently, two probability models are deployed to simulate a user's acceptance o
 \begin{equation}
 P = \frac{p_u}{B/n}
 \end{equation}
-Using this probability mode, we ran the network simulation on four different days and time intervals and calculated average PSQ and system congestion. The results are shown in Figure 5.
-
-The second probability model is used to investigate what percentage of the population need to accept the monetary incentives in order to significantly decongest the system. We ran the network simulation on November 3, 2015 from 7am to 10am and varied the probability from 0 to 1 with a step size of 0.1. Figure 6 shows the average PSQ and system congestion with different probabilities. While average PSQ decreases proportionally with probability, average system congestion reduces aggressively as more bikers accept the monetary incentives. Eventually, average system congestion reaches saturation and having a larger percentage of the population accept the monetary incentives does not dramatically change the average system congestion. In fact, the results suggest that only half of the population need to accept the monetary incentives before average system congestion approaches its saturation level.
+Using this probability mode, we ran the network simulation on four different days and time intervals and calculated average PSQ and system congestion. The results are shown in Figure 6.
+\hfill \break
+\centerline{\includegraphics[width=0.25\textwidth]{m4/Average_PSQ_Nov3.png}\includegraphics[width=0.25\textwidth]{m4/System_Congestion_Nov3.png}}
+\centerline{\includegraphics[width=0.25\textwidth]{m4/Average_PSQ_Mar3.png}\includegraphics[width=0.25\textwidth]{m4/System_Congestion_Mar3.png}}
+\centerline{\includegraphics[width=0.25\textwidth]{m4/Average_PSQ_June4.png}\includegraphics[width=0.25\textwidth]{m4/System_Congestion_June4.png}}
+\centerline{\includegraphics[width=0.25\textwidth]{m4/Average_PSQ_Aug4.png}\includegraphics[width=0.25\textwidth]{m4/System_Congestion_Aug4.png}}
+\centerline{Figure 6: Citi Bike Network on Different Days and Time Intervals}
+\hfill \break
+The second probability model is used to investigate what percentage of the population need to accept the monetary incentives in order to significantly decongest the system. We ran the network simulation on November 3, 2015 from 7am to 10am and varied the probability from 0 to 1 with a step size of 0.1. Figure 7 and 8 show the average PSQ and system congestion with different probabilities. While average PSQ decreases proportionally with probability, average system congestion reduces aggressively as more bikers accept the monetary incentives. Eventually, average system congestion reaches saturation and having a larger percentage of the population accept the monetary incentives does not dramatically change the average system congestion. In fact, the results suggest that only half of the population need to accept the monetary incentives before average system congestion approaches its saturation level.
+\centerline{\includegraphics[width=0.4\textwidth]{m4/Average_PSQ_Nov3_Prob.png}}
+\centerline{Figure 5: Average PSQ at Different Probabilities}
+\hfill \break
+\centerline{\includegraphics[width=0.4\textwidth]{m4/System_Congestion_Nov3_Prob.png}}
+\centerline{Figure 5: Average System Congestion at Different Probabilities}
+\hfill \break
 
 %\centerline{\includegraphics[width=0.4\textwidth]{node_degree.jpg}}
 %\centerline{Figure 2: Average Node Degree}
